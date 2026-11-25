@@ -1,0 +1,233 @@
+#!/bin/sh
+set -eu
+
+PATH=${ROUTEHUB_DNS_PATH:-/opt/sbin:/opt/bin:/usr/sbin:/usr/bin:/sbin:/bin}
+export PATH
+umask 077
+
+run=${ROUTEHUB_DNS_RUN:-/opt/var/run/routehub-dns}
+proc=${ROUTEHUB_DNS_PROC:-/proc}
+state=$run/active
+chain=RH_DNS_LAN
+
+nat() { iptables -w -t nat "$@"; }
+
+start_stamp() {
+    awk '{sub(/^.*\) /, ""); if ($1 != "Z" && $20 ~ /^[0-9]+$/) print $20}' "$proc/$1/stat" 2>/dev/null || true
+}
+
+read_state() {
+    read -r interface source router port owner stamp generation < "$state"
+}
+
+owner_alive() {
+    [ -n "$stamp" ] && [ "$(start_stamp "$owner")" = "$stamp" ]
+}
+
+valid_scope() {
+    awk -v src="$source" -v dst="$router" '
+        function address(value, a, i, result) {
+            if (split(value,a,".") != 4) return -1
+            for (i=1; i<=4; i++) {
+                if (a[i] !~ /^[0-9]+$/ || a[i] > 255 || a[i] ~ /^0[0-9]/) return -1
+                result=result*256+a[i]
+            }
+            return result
+        }
+        BEGIN {
+            if (split(src, scope, "/") != 2 || scope[2] !~ /^([89]|[12][0-9]|3[0-2])$/) exit 1
+            network=address(scope[1]); host=address(dst)
+            range=2^(32-scope[2])
+            if (network < 0 || host < network || host >= network+range ||
+                network != int(network/range)*range) exit 1
+            if (network >= 167772160 && network+range <= 184549376) exit 0
+            if (network >= 2886729728 && network+range <= 2887778304) exit 0
+            if (network >= 3232235520 && network+range <= 3232301056) exit 0
+            exit 1
+        }'
+}
+
+resolver_ready() {
+    owner_alive || return 1
+    local endpoint links
+    endpoint=$(printf '%s\n' "$router" | awk -F. -v port="$port" '{printf "%02X%02X%02X%02X:%04X",$4,$3,$2,$1,port}')
+    links=$(ls -l "$proc/$owner/fd" 2>/dev/null) || return 1
+    printf '%s\n' "$links" | awk -v endpoint="$endpoint" '
+        FNR==NR {
+            if (match($0,/socket:\[[0-9]+\]$/)) owned[substr($0,RSTART+8,RLENGTH-9)]=1
+            next
+        }
+        $2==endpoint && $10 in owned {
+            if (FILENAME ~ /\/tcp$/ && $4=="0A") tcp=1
+            if (FILENAME ~ /\/udp$/ && $4=="07") udp=1
+        }
+        END { if (!tcp || !udp) exit 1 }
+    ' - "$proc/$owner/net/tcp" "$proc/$owner/net/udp" 2>/dev/null
+}
+
+anchor() {
+    local operation="$1" transport="$2"
+    shift 2
+    nat "$operation" PREROUTING "$@" -i "$interface" -s "$source" -d "$router" \
+        -p "$transport" --dport 53 -j "$chain"
+}
+
+redirect() {
+    nat "$1" "$chain" -p "$2" --dport 53 -j DNAT --to-destination "$router:$port"
+}
+
+rules_ready() {
+    local rules
+    rules=$(nat -S "$chain" 2>/dev/null) || return 1
+    [ "$(printf '%s\n' "$rules" | awk '/^-A / {n++} END {print n+0}')" = 2 ] || return 1
+    for transport in tcp udp; do
+        anchor -C "$transport" >/dev/null 2>&1 && redirect -C "$transport" >/dev/null 2>&1 || return 1
+    done
+}
+
+detach() {
+    local transport
+    for transport in tcp udp; do
+        while anchor -C "$transport" >/dev/null 2>&1; do
+            anchor -D "$transport" || return 1
+        done
+    done
+}
+
+forget_redirected_sessions() {
+    command -v conntrack >/dev/null 2>&1 || return 0
+    local transport
+    for transport in tcp udp; do
+        # The translated reply port differentiates our flows from native DNS.
+        conntrack -D -f ipv4 -p "$transport" --orig-src "$source" --orig-dst "$router" \
+            --orig-port-dst 53 --reply-src "$router" --reply-port-src "$port" >/dev/null 2>&1 || true
+    done
+}
+
+cleanup() {
+    local rules
+    rules=$(nat -S) || return 1
+    detach || return 1
+    if printf '%s\n' "$rules" | awk -v owned="$chain" '$1=="-N" && $2==owned {found=1} END {exit !found}'; then
+        nat -F "$chain" && nat -X "$chain" || return 1
+    fi
+    forget_redirected_sessions
+    rm -f "$state"
+}
+
+attach() {
+    rules_ready && return 0
+    nat -S >/dev/null || return 1
+    detach || return 1
+    if nat -S "$chain" >/dev/null 2>&1; then
+        nat -F "$chain" || return 1
+    else
+        nat -N "$chain" || return 1
+    fi
+    local transport
+    for transport in tcp udp; do
+        redirect -A "$transport" || return 1
+    done
+    for transport in tcp udp; do
+        anchor -I "$transport" 1 || return 1
+    done
+}
+
+lock_state() {
+    local attempts=3 lock_tool
+    [ ! -L "$run" ] || return 1
+    lock_tool=${0%/*}/flock
+    if [ ! -x "$lock_tool" ]; then
+        lock_tool=$(command -v flock) || return 1
+    fi
+    if [ ! -d "$run" ]; then
+        mkdir -p "$run" 2>/dev/null || [ -d "$run" ] || return 1
+    fi
+    LC_ALL=C ls -ldn "$run" | awk '$1 == "drwx------" && $3 == 0 { valid=1 } END { exit !valid }' || return 1
+    exec 9>"$run/lock" || return 1
+    while ! "$lock_tool" -n 9; do
+        [ "$attempts" -gt 0 ] || return 1
+        attempts=$((attempts - 1))
+        sleep 1
+    done
+}
+
+action=${1:-}
+case "$action" in
+    watch)
+        while [ -s "$state" ] && read_state && [ "$generation" = "${2:-}" ]; do
+            if ! resolver_ready; then
+                if "$0" stop-if "$generation"; then exit 0; fi
+            fi
+            sleep 1
+        done
+        exit 0
+        ;;
+    status)
+        if [ ! -s "$state" ]; then
+            printf '%s\n' inactive
+        elif read_state && resolver_ready && rules_ready; then
+            printf '%s\n' active
+        else
+            printf '%s\n' degraded
+        fi
+        exit 0
+        ;;
+    start) [ "$#" -eq 6 ] || exit 2 ;;
+    refresh|stop|stop-if) [ -s "$state" ] || exit 0 ;;
+    *) echo 'usage: routehub-dns start IFACE CIDR ROUTER_IPV4 PORT PID | stop | status | refresh' >&2; exit 2 ;;
+esac
+lock_state
+
+case "$action" in
+    start)
+        interface=$2 source=$3 router=$4 port=$5 owner=$6
+        printf '%s\n' "$interface" | grep -Eq '^[[:alnum:]_][[:alnum:]_.-]{0,14}$'
+        printf '%s\n' "$port" "$owner" | awk '!/^[1-9][0-9]*$/ {exit 1}'
+        [ "${#port}" -le 5 ] && [ "$port" -ge 1024 ] && [ "$port" -le 65535 ] && [ "$owner" -gt 1 ]
+        valid_scope
+        ip -4 -o addr show dev "$interface" | awk -v expected="$router" '
+            $3=="inet" {split($4,a,"/"); if (a[1]==expected) assigned=1} END {exit !assigned}'
+        stamp=$(start_stamp "$owner")
+        resolver_ready
+        if [ -s "$state" ]; then
+            requested="$interface $source $router $port $owner $stamp"
+            read_state
+            if [ "$requested" = "$interface $source $router $port $owner $stamp" ]; then
+                attach || { cleanup; exit 1; }
+                exit 0
+            fi
+            echo 'RouteHub DNS: stop the existing redirect before changing its scope' >&2
+            exit 1
+        fi
+        if nat -S "$chain" >/dev/null 2>&1; then
+            echo 'RouteHub DNS: firewall chain already exists' >&2
+            exit 1
+        fi
+        pending=$(mktemp "$run/pending.XXXXXX")
+        generation=${pending##*.}
+        trap 'rm -f "$pending"' EXIT
+        printf '%s %s %s %s %s %s %s\n' "$interface" "$source" "$router" "$port" "$owner" "$stamp" "$generation" > "$pending"
+        mv "$pending" "$state"
+        trap 'cleanup || true' EXIT
+        trap 'exit 1' HUP INT TERM
+        "$0" watch "$generation" >/dev/null 2>&1 </dev/null 9>&- &
+        attach
+        trap - EXIT HUP INT TERM
+        ;;
+    refresh)
+        [ -s "$state" ] && read_state || exit 0
+        if resolver_ready; then
+            attach || { cleanup; exit 1; }
+        else
+            cleanup
+        fi
+        ;;
+    stop|stop-if)
+        [ -s "$state" ] && read_state || exit 0
+        if [ "$action" = stop-if ]; then
+            [ "$generation" = "${2:-}" ] || exit 0
+        fi
+        cleanup
+        ;;
+esac

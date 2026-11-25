@@ -1,0 +1,29 @@
+[package]
+name = "routehub-native-awg"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97"
+publish = false
+
+[workspace]
+
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "abort"
+
+[dependencies]
+awgtun = { package = "mirage-awgtun", version = "=0.12.0" }
+futures = { version = "0.3", default-features = false, features = ["std"] }
+hex = "0.4"
+hickory-proto = "=0.26.3"
+ipnet = "2"
+routehub-imports = { path = "../imports" }
+smoltcp = { version = "=0.14.0", default-features = false }
+tokio = { version = "1", features = ["io-util", "macros", "net", "rt", "sync", "time"] }
+tokio-smoltcp = { version = "=0.7.0", default-features = false, features = ["proto-ipv4", "proto-ipv6"] }
+
+[dev-dependencies]
+base64 = "0.22"

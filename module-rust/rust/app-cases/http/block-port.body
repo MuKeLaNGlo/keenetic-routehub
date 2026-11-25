@@ -1,0 +1,1 @@
+{"rule":"Drop DNS","target":"@block","scope":"global","configuredTarget":"@block"}

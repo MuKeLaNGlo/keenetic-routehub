@@ -1,0 +1,21 @@
+#!/bin/sh
+
+PATH=/opt/sbin:/opt/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export PATH
+umask 077
+root=/storage/routehub
+config=$root/opt/etc/routehub/config.json
+
+case "${1:-}" in
+    start)
+        [ -r "$root/opt/etc/routehub/runtime.json" ] || exit 0
+        binary=$(mktemp /tmp/routehub-boot.XXXXXX) || exit 1
+        trap 'rm -f "$binary"' EXIT
+        cp "$root/opt/sbin/routehub" "$binary" && chmod 0700 "$binary" || exit 1
+        enabled=$("$binary" boot-enabled -config "$config") || exit 1
+        if [ "$enabled" = enabled ]; then sh "$root/service.sh" start; fi
+        ;;
+    stop)
+        if [ -r "$root/service.sh" ]; then sh "$root/service.sh" stop; fi
+        ;;
+esac

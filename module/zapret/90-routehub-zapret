@@ -1,0 +1,6 @@
+#!/bin/sh
+[ "${table:-}" = mangle ] || exit 0
+case "${type:-}" in iptables|ip6tables) ;; *) exit 0 ;; esac
+service=/opt/lib/routehub/routehub-zapret
+[ -x "$service" ] || exit 0
+exec "$service" refresh "$type"

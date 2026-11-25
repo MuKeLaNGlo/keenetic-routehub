@@ -1,0 +1,20 @@
+[package]
+name = "routehub-subscriptions"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = ["http"]
+http = ["dep:reqwest", "dep:tokio"]
+
+[dependencies]
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["serde", "std", "clock"] }
+hex = "0.4"
+percent-encoding = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["raw_value"] }
+sha2 = "0.10"
+url = "2"
+reqwest = { version = "0.12", optional = true, default-features = false, features = ["rustls-tls-webpki-roots", "cookies", "socks"] }
+tokio = { version = "1", optional = true, features = ["rt", "sync", "time"] }

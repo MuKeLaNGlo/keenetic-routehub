@@ -1,0 +1,1 @@
+{"panelHost":"127.0.0.1","panelPort":18387,"socksPort":18388,"zapret":false,"profiles":[],"rules":[{"name":"Hunt","domain":"huntshowdown.com","target":"direct"},{"name":"Drop network","cidr":"203.0.113.0/24","target":"@block"},{"name":"Drop DNS","cidr":"198.51.100.0/24","network":"udp","port":53,"target":"@block"}],"defaultTarget":"direct","revision":"[..]"}

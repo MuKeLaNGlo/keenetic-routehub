@@ -1,0 +1,10 @@
+# Discord TLS and QUIC, variant 1. RouteHub restricts the hostlist.
+--lua-init=@/opt/lib/routehub/zapret2/lua/zapret-lib.lua
+--lua-init=@/opt/lib/routehub/zapret2/lua/zapret-antidpi.lua
+--filter-tcp=443
+--filter-udp=443
+--filter-l7=tls,quic
+--payload=tls_client_hello
+--lua-desync=multisplit:pos=midsld
+--payload=quic_initial
+--lua-desync=fake:blob=fake_default_quic:repeats=1

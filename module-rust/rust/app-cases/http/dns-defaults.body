@@ -1,0 +1,1 @@
+{"protocol":"doh","primary":"https://dns.quad9.net/dns-query","secondary":"https://cloudflare-dns.com/dns-query","cache":true,"adblock":false,"lists":["normal"],"exceptions":[],"enabled":false,"lanAvailable":false,"lanActive":false,"blocklistEntries":0,"sampleBlocked":false}

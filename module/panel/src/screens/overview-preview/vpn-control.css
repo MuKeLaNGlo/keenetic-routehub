@@ -1,0 +1,473 @@
+@property --vpn-stage {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #71869e;
+}
+
+.vpn-control {
+  --vpn-stage: #71869e;
+  --vpn-halo-inner: 35%;
+  --vpn-halo-middle: 20%;
+  --vpn-ink: var(--background);
+  --vpn-dot: var(--muted-foreground);
+  --vpn-wire: color-mix(in srgb, var(--vpn-stage) 68%, #41566d);
+  --vpn-celebration: #238553;
+  --vpn-incident: #a03d57;
+  min-width: 0;
+  container-type: inline-size;
+  transition: --vpn-stage 520ms ease;
+}
+
+.dark .vpn-control {
+  --vpn-halo-inner: 51%;
+  --vpn-halo-middle: 30%;
+  --vpn-wire: color-mix(in srgb, var(--vpn-stage) 56%, #d3e4ff);
+  --vpn-celebration: #bbfbd3;
+  --vpn-incident: #ffc0cd;
+}
+
+.vpn-control[data-phase="connecting"] {
+  --vpn-dot: var(--info);
+  --vpn-stage: #4d7fe6;
+}
+
+.vpn-control[data-phase="reconnecting"] {
+  --vpn-dot: var(--draft);
+  --vpn-stage: #9460dd;
+}
+
+.vpn-control[data-phase="success"] {
+  --vpn-dot: var(--ok);
+  --vpn-stage: #49c66f;
+}
+
+.vpn-control[data-phase="connected"] {
+  --vpn-dot: var(--ok);
+  --vpn-stage: #40b187;
+}
+
+.vpn-control[data-phase="disconnecting"] {
+  --vpn-dot: var(--warn);
+  --vpn-stage: #d89537;
+}
+
+.vpn-control[data-phase="disconnected"] {
+  --vpn-stage: #8398a8;
+}
+
+.vpn-control[data-phase="canceled"] {
+  --vpn-stage: #9790a4;
+}
+
+.vpn-control:is([data-phase="connect-error"], [data-phase="disconnect-error"]) {
+  --vpn-dot: var(--bad);
+  --vpn-stage: #ca546b;
+}
+
+.vpn-control[data-phase="connection-lost"] {
+  --vpn-dot: var(--bad);
+  --vpn-stage: #a53d62;
+}
+
+.vpn-control[data-phase="disconnect-error"] {
+  --vpn-dot: var(--warn);
+}
+
+.vpn-control__toggle {
+  display: block;
+  width: min(100%, 680px);
+  margin-inline: auto;
+  cursor: pointer;
+}
+
+.vpn-control__toggle[aria-disabled="true"] {
+  cursor: progress;
+}
+
+.vpn-control__toggle:focus-visible {
+  outline: none;
+}
+
+.vpn-control__toggle:focus-visible .vpn-control__status-label {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.vpn-control__stage {
+  position: relative;
+  display: block;
+  height: clamp(184px, 48vw, 236px);
+  isolation: isolate;
+}
+
+.vpn-control__stage::before {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: calc(100% + clamp(28px, 4.6cqw, 44px));
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse 48% 48% at 50% 51%,
+    color-mix(in srgb, var(--vpn-stage) var(--vpn-halo-inner), transparent),
+    color-mix(in srgb, var(--vpn-stage) var(--vpn-halo-middle), transparent) 40%,
+    color-mix(in srgb, var(--vpn-stage) 5%, transparent) 76%,
+    transparent 100%
+  );
+  pointer-events: none;
+  content: '';
+}
+
+.vpn-control__demo {
+  color: var(--muted-foreground);
+  font-size: .6875rem;
+  line-height: 1.2;
+}
+
+.vpn-control__footer {
+  display: grid;
+  min-height: 50px;
+  place-content: center;
+  padding: 3px 8px;
+  text-align: center;
+}
+
+.vpn-control__status-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.vpn-control__status-label {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-inline: 4px;
+  border-radius: 6px;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .vpn-control__toggle .beacon-mascot {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 200ms ease-out;
+  }
+
+  .vpn-control__toggle:not([aria-disabled="true"]):hover .beacon-mascot {
+    transform: scale(1.06);
+  }
+}
+
+.vpn-control__status-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--vpn-dot);
+  transition: background-color 220ms ease;
+}
+
+.vpn-control__title {
+  font-size: .9375rem;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+}
+
+.vpn-control__hint {
+  display: block;
+  padding-inline: 8px;
+  color: var(--muted-foreground);
+  font-size: .71875rem;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.vpn-control__scenarios {
+  color: var(--muted-foreground);
+  font-size: .75rem;
+}
+
+.vpn-control__scenarios summary {
+  display: flex;
+  width: fit-content;
+  min-height: 33px;
+  margin-inline: auto;
+  padding: 4px 8px;
+  align-items: center;
+  gap: 4px;
+  border-radius: 5px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.vpn-control__scenarios summary::-webkit-details-marker {
+  display: none;
+}
+
+.vpn-control__scenarios[open] summary svg {
+  transform: rotate(180deg);
+}
+
+.vpn-control__scenarios summary:hover {
+  color: var(--foreground);
+}
+
+.vpn-control__scenario-options {
+  width: min(100%, 280px);
+  margin-inline: auto;
+  padding: 3px 8px 9px;
+}
+
+.vpn-control__scenario-field {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 4px;
+  min-width: 0;
+}
+
+.vpn-control__scenarios summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.vpn-mascot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(100%, 434px);
+  height: 100%;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.vpn-mascot :is(.vpn-mascot__pose, .vpn-mascot__steer, .vpn-mascot__shadow, .vpn-mascot__eyes, .vpn-mascot__signals, .vpn-mascot__sparkles, .vpn-mascot__break) {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.vpn-mascot__orbit {
+  fill: none;
+  stroke: var(--vpn-wire);
+  stroke-width: .86;
+  opacity: .58;
+}
+
+.vpn-mascot__orbit ellipse:nth-child(2) {
+  opacity: .52;
+  stroke-dasharray: 2 5;
+}
+
+.vpn-mascot__node {
+  fill: var(--vpn-stage);
+  stroke-width: 1.35;
+}
+
+.vpn-mascot__marks {
+  opacity: .77;
+}
+
+.vpn-mascot__wire {
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 12 88;
+  opacity: .38;
+}
+
+.vpn-mascot__stream {
+  fill: none;
+  stroke: var(--vpn-wire);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 19 81;
+  opacity: 0;
+}
+
+.vpn-mascot__pose { animation: mascot-drift 5.1s ease-in-out infinite; }
+.vpn-mascot__shadow { animation: mascot-shadow 5.1s ease-in-out infinite; }
+.vpn-mascot__steer { transition: transform 190ms ease-out; }
+.vpn-mascot[data-tracking] .vpn-mascot__steer { transform: rotate(var(--mascot-look-turn, 0deg)); }
+
+.vpn-mascot__eyes { animation: mascot-blink 8.7s linear infinite; }
+.vpn-mascot__look { animation: mascot-curiosity 14s ease-in-out infinite; }
+.vpn-mascot[data-tracking] .vpn-mascot__look {
+  animation: none;
+  transform: translate(var(--mascot-look-x, 0), var(--mascot-look-y, 0));
+  transition: transform 150ms ease-out;
+}
+
+.vpn-mascot__mouth, .vpn-mascot__sparkles, .vpn-mascot__break { opacity: 0; }
+.vpn-mascot__mouth--calm { opacity: 1; }
+
+.vpn-mascot__signals {
+  fill: var(--vpn-ink);
+  stroke: var(--vpn-wire);
+  stroke-width: 1.15;
+  opacity: 0;
+  animation: mascot-signals 14s ease-in-out infinite;
+}
+
+.vpn-mascot__sparkles {
+  stroke: var(--vpn-celebration);
+  stroke-width: 2;
+}
+
+.vpn-mascot__break { stroke: var(--vpn-incident); stroke-width: 2.1; }
+
+.vpn-control:is([data-phase="connecting"], [data-phase="reconnecting"], [data-phase="disconnecting"]) .vpn-mascot__pose {
+  animation: mascot-accelerate 750ms ease-in-out infinite alternate;
+}
+
+.vpn-control:is([data-phase="connecting"], [data-phase="reconnecting"], [data-phase="disconnecting"]) .vpn-mascot__stream {
+  opacity: 1;
+  animation: mascot-stream 840ms linear infinite;
+}
+
+.vpn-control:is([data-phase="connecting"], [data-phase="reconnecting"], [data-phase="disconnecting"]) .vpn-mascot__mouth--focused {
+  opacity: 1;
+}
+
+.vpn-control[data-phase="reconnecting"] .vpn-mascot__pose {
+  animation: mascot-recover 950ms ease-in-out infinite alternate;
+}
+
+.vpn-control[data-phase="disconnecting"] .vpn-mascot__pose { animation: mascot-return 1.1s ease-in-out both; }
+.vpn-control[data-phase="disconnecting"] .vpn-mascot__stream { animation-direction: reverse; }
+.vpn-control[data-phase="disconnected"] .vpn-mascot__pose { animation: mascot-settle 1.1s cubic-bezier(.2,.65,.25,1) both; }
+.vpn-control[data-phase="canceled"] .vpn-mascot__pose { animation: mascot-abort .62s ease-out both; }
+.vpn-control[data-phase="success"] .vpn-mascot__pose { animation: mascot-cheer 1.05s cubic-bezier(.22,.8,.32,1) both; }
+.vpn-control[data-phase="success"] .vpn-mascot__sparkles { animation: mascot-sparkles 1.05s ease-out both; }
+
+.vpn-control:is([data-phase="success"], [data-phase="connected"]) .vpn-mascot__wire {
+  opacity: 1;
+  animation: mascot-stream 9s linear infinite;
+}
+
+.vpn-control:is([data-phase="success"], [data-phase="connected"]) .vpn-mascot__mouth--happy { opacity: 1; }
+
+.vpn-control:is([data-phase="connect-error"], [data-phase="disconnect-error"], [data-phase="connection-lost"]) .vpn-mascot__pose {
+  animation: mascot-stumble .65s ease-out both, mascot-drift 6s .65s ease-in-out infinite;
+}
+
+.vpn-control:is([data-phase="connect-error"], [data-phase="disconnect-error"], [data-phase="connection-lost"]) .vpn-mascot__break {
+  opacity: .77;
+  animation: mascot-stutter .8s ease-out;
+}
+
+.vpn-control:is([data-phase="connect-error"], [data-phase="disconnect-error"], [data-phase="connection-lost"]) .vpn-mascot__mouth--worried {
+  opacity: 1;
+}
+
+.vpn-control:is([data-phase="connecting"], [data-phase="reconnecting"], [data-phase="disconnecting"], [data-phase="success"], [data-phase="connected"], [data-phase="connect-error"], [data-phase="disconnect-error"], [data-phase="connection-lost"]) .vpn-mascot__mouth--calm {
+  opacity: 0;
+}
+
+.vpn-control:not(:is([data-phase="off"], [data-phase="connected"])) .vpn-mascot__signals,
+.vpn-mascot[data-tracking] .vpn-mascot__signals {
+  visibility: hidden;
+}
+
+@keyframes mascot-drift {
+  0%, 100% { transform: translateY(0) rotate(-.6deg); }
+  46% { transform: translateY(-7px) rotate(1deg); }
+}
+
+@keyframes mascot-shadow {
+  0%, 100% { transform: scaleX(1); opacity: .9; }
+  46% { transform: scaleX(.91); opacity: .67; }
+}
+
+@keyframes mascot-blink {
+  0%, 30%, 32%, 80%, 83%, 100% { transform: scaleY(1); }
+  31%, 81.5% { transform: scaleY(.1); }
+}
+
+@keyframes mascot-curiosity {
+  0%, 38%, 58%, 100% { transform: translate(0); }
+  44%, 48% { transform: translate(-4px, -2px); }
+  52% { transform: translate(-3px, -3px); }
+}
+
+@keyframes mascot-signals {
+  0%, 38%, 58%, 100% { opacity: 0; transform: translate(12px, 13px) scale(.72); }
+  45% { opacity: .8; }
+  56% { opacity: 0; transform: translate(-4px, -15px) scale(1.06); }
+}
+
+@keyframes mascot-accelerate {
+  from { transform: translate(-5px, 2px) rotate(-2deg) scale(.98); }
+  to { transform: translate(13px, -8px) rotate(-6deg) scale(1.035); }
+}
+
+@keyframes mascot-recover {
+  from { transform: translate(-9px, 0) rotate(5deg) scale(.97); }
+  to { transform: translate(7px, -4px) rotate(-4deg) scale(1.02); }
+}
+
+@keyframes mascot-return {
+  0% { transform: translate(8px, -3px) rotate(-2deg); }
+  58% { transform: translate(-12px, 5px) rotate(6deg) scale(.96); }
+  100% { transform: translate(-3px, 4px) rotate(1deg); }
+}
+
+@keyframes mascot-settle {
+  0% { transform: translate(-3px, 4px) rotate(1deg); }
+  40% { transform: translateY(-5px) rotate(-3deg); }
+  100% { transform: translate(0); }
+}
+
+@keyframes mascot-abort {
+  0% { transform: translateX(7px) rotate(-3deg); }
+  42% { transform: translate(-10px, 5px) rotate(4deg); }
+  100% { transform: translate(0); }
+}
+
+@keyframes mascot-cheer {
+  0% { transform: translate(8px, -3px) scale(.97); }
+  35% { transform: translateY(-18px) rotate(-5deg) scale(1.1); }
+  71% { transform: translateY(3px) rotate(3deg) scale(.99); }
+  100% { transform: translate(0); }
+}
+
+@keyframes mascot-sparkles {
+  0% { opacity: 0; transform: scale(.5); }
+  28% { opacity: 1; transform: scale(1.06); }
+  67% { opacity: .84; }
+  100% { opacity: 0; transform: scale(1.23); }
+}
+
+@keyframes mascot-stream {
+  to { stroke-dashoffset: -100; }
+}
+
+@keyframes mascot-stumble {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translateX(-9px) rotate(5deg); }
+  42% { transform: translateX(5px) rotate(-4deg); }
+  66% { transform: translate(-3px, 4px) rotate(2deg); }
+}
+
+@keyframes mascot-stutter {
+  0%, 50% { opacity: 0; }
+  28%, 76% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vpn-control .vpn-mascot * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .vpn-control,
+  .vpn-control__status-dot {
+    transition: none !important;
+  }
+
+  .vpn-control[data-phase="success"] .vpn-mascot__sparkles { opacity: .85; }
+}

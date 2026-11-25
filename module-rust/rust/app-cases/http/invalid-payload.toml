@@ -1,0 +1,16 @@
+[request]
+method = "POST"
+path = "/api/evaluate"
+body = '{"network": "tcp", "port": 443, "unknownFlag": true}'
+
+[request.headers]
+Content-Type = "application/json"
+
+[response]
+status = 400
+
+[response.headers]
+cache-control = "no-store"
+content-security-policy = "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; font-src data:; img-src data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+content-type = "application/json; charset=utf-8"
+x-content-type-options = "nosniff"

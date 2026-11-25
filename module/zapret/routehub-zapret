@@ -1,0 +1,400 @@
+#!/bin/sh
+# shellcheck disable=SC3043
+set -u
+
+helper_dir=${0%/*}
+[ "$helper_dir" != "$0" ] || helper_dir=/opt/lib/routehub
+PATH=${ROUTEHUB_ZAPRET_PATH:-$helper_dir:/opt/sbin:/opt/bin:/opt/usr/sbin:/opt/usr/bin:/sbin:/bin:/usr/sbin:/usr/bin}
+export PATH
+umask 077
+
+etc_dir=${ROUTEHUB_ZAPRET_ETC:-/opt/etc/routehub}
+state_dir=${ROUTEHUB_ZAPRET_RUN:-/var/run/routehub-zapret}
+proc_dir=${ROUTEHUB_ZAPRET_PROC:-/proc}
+state_file=$state_dir/child
+args_file=${ROUTEHUB_ZAPRET_ARGS:-$etc_dir/zapret.args}
+queue_file=$proc_dir/net/netfilter/nfnetlink_queue
+chain=RH_ZAPRET_OUT
+outbound_mark=0x51000/0xff000
+diagnostic_mark=0x100000/0x100000
+loop_mark=0x40000000
+window=15
+queue_rate=512/second
+queue_burst=128
+
+fail() {
+    printf '%s\n' "$*" >&2
+    return 1
+}
+
+load_config() {
+    local line key value
+    enabled=0
+    ipv6=0
+    queue=314
+    voice_ports=
+    binary=/opt/usr/bin/nfqws2
+    [ -f "$etc_dir/zapret.conf" ] || return 0
+    while IFS= read -r line || [ -n "$line" ]; do
+        case "$line" in
+            ''|'#'*) continue ;;
+            *=*) key=${line%%=*}; value=${line#*=} ;;
+            *) fail "Invalid zapret.conf entry" || return 1 ;;
+        esac
+        case "$key" in
+            ENABLED) enabled=$value ;;
+            IPV6) ipv6=$value ;;
+            QUEUE) queue=$value ;;
+            UDP_VOICE_PORTS) voice_ports=$value ;;
+            NFQWS) binary=$value ;;
+            *) fail "Unknown zapret.conf key: $key" || return 1 ;;
+        esac
+    done < "$etc_dir/zapret.conf"
+
+    case "$enabled:$ipv6" in 0:0|0:1|1:0|1:1) ;; *) fail "ENABLED and IPV6 must be 0 or 1" || return 1 ;; esac
+    case "$queue" in ''|*[!0-9]*) fail "Invalid NFQUEUE number" || return 1 ;; esac
+    [ "${#queue}" -le 5 ] && [ "$queue" -le 65535 ] || { fail "Invalid NFQUEUE number"; return 1; }
+    # Use decimal notation consistently in argv, rules and the /proc queue listing.
+    case "$queue" in 0[0-9]*) fail "NFQUEUE number cannot have leading zeros" || return 1 ;; esac
+    case "$binary" in /*) ;; *) fail "NFQWS must be an absolute path" || return 1 ;; esac
+    if [ -n "$voice_ports" ]; then
+        printf '%s\n' "$voice_ports" | awk -F, '
+            NF > 7 {exit 1}
+            {for (i=1; i<=NF; i++) {
+                if ($i !~ /^[1-9][0-9]*(:[1-9][0-9]*)?$/) exit 1
+                n=split($i,p,":"); lo=p[1]+0; hi=n == 2 ? p[2]+0 : lo
+                if (lo>hi || hi>65535 || (lo<=443 && hi>=443)) exit 1
+            }}' || { fail "Invalid UDP_VOICE_PORTS list"; return 1; }
+    fi
+}
+
+profile_command() {
+    local mode="$1" line strategy=0 hostlist=0 service_port=0 layer7=0 payload=0
+    set -- "--qnum=$queue" "--fwmark=$loop_mark"
+    [ -r "$args_file" ] || { fail "Missing zapret.args"; return 1; }
+    while IFS= read -r line || [ -n "$line" ]; do
+        case "$line" in
+            ''|'#'*) continue ;;
+            --q*|--fw*|--pi*|--da*|--dry*|--int*|--vers*|--he*)
+                fail "zapret.args contains a service-managed argument"; return 1 ;;
+            --lua-desync=*) strategy=1 ;;
+            --[a-z]*) ;;
+            *) fail "Use one nfqws2 argument per line in zapret.args"; return 1 ;;
+        esac
+        if [ "$queue_mode" = userspace ]; then
+            case "$line" in
+                --new)
+                    hostlist=0 service_port=0 layer7=0 payload=0 ;;
+                --hostlist-domains=?*)
+                    hostlist=1 ;;
+                --filter-tcp=443|--filter-udp=443)
+                    service_port=1 ;;
+                --filter-l7=tls|--filter-l7=quic|--filter-l7=tls,quic|--filter-l7=quic,tls)
+                    layer7=1 ;;
+                --payload=tls_client_hello|--payload=quic_initial|--payload=tls_client_hello,quic_initial|--payload=quic_initial,tls_client_hello)
+                    payload=1 ;;
+                --filter-tcp=*|--filter-udp=*|--filter-l7=*|--payload=*|--in-range=*|--out-range=*)
+                    fail "Unsupported rule in managed compatibility mode"; return 1 ;;
+                --lua-desync=*)
+                    [ "$hostlist:$service_port:$layer7:$payload" = 1:1:1:1 ] ||
+                        { fail "Managed compatibility mode requires HTTPS/QUIC host and payload filters"; return 1; }
+                    # These counters are maintained by nfqws2, independently
+                    # of the kernel conntrack accounting sysctl.
+                    set -- "$@" "--in-range=x" "--out-range=-n$window" ;;
+            esac
+        fi
+        set -- "$@" "$line"
+    done < "$args_file"
+    [ "$strategy" -eq 1 ] || { fail "Configure a tested nfqws2 strategy in zapret.args"; return 1; }
+
+    if [ "$mode" = check ]; then
+        "$binary" --dry-run "$@"
+        return $?
+    fi
+    "$binary" "$@" </dev/null >> "$state_dir/nfqws2.log" 2>&1 9>&- &
+    child_pid=$!
+}
+
+process_identity() {
+    local raw
+    kill -0 "$1" 2>/dev/null || return 1
+    IFS= read -r raw 2>/dev/null < "/proc/$1/stat" || return 1
+    # After the parenthesized process name, the process state is field 1 and
+    # starttime is field 20. Reject a zombie and avoid killing reused PIDs.
+    printf '%s\n' "${raw##*) }" | awk '$1 != "Z" && $20 ~ /^[0-9]+$/ {print $20}'
+}
+
+read_active_state() {
+    [ -r "$state_file" ] || return 1
+    IFS=' ' read -r child_pid child_identity active_queue active_ipv6 active_mode active_voice_ports < "$state_file" || return 1
+    # Installed versions before compatibility mode stored the voice ports last.
+    case "$active_mode" in
+        connbytes|userspace) ;;
+        *) active_voice_ports=$active_mode active_mode=connbytes ;;
+    esac
+    case "$child_pid" in ''|*[!0-9]*) return 1 ;; esac
+    case "$child_identity" in ''|*[!0-9]*) return 1 ;; esac
+    [ "$child_pid" -gt 1 ] || return 1
+    [ "$(process_identity "$child_pid")" = "$child_identity" ]
+}
+
+queue_bound() {
+    [ -r "$queue_file" ] &&
+        awk -v q="$1" '$1 == q {found=1} END {exit !found}' "$queue_file"
+}
+
+firewall() {
+    local tool="$1"
+    shift
+    "$tool" -w -t mangle "$@"
+}
+
+attach() {
+    local tool="$1" protocol port
+    if ! firewall "$tool" -S "$chain" >/dev/null 2>&1; then
+        firewall "$tool" -N "$chain" || return 1
+    fi
+    if [ "$tool" = iptables ] && ! diagnostic_rule -C >/dev/null 2>&1; then
+        diagnostic_rule -I 1 || return 1
+    fi
+
+    for protocol in tcp udp; do
+        if [ "$protocol:$active_mode" = tcp:connbytes ]; then set -- 80 443; else set -- 443; fi
+        for port; do
+            add_queue_rule "$tool" "$protocol" "$port" || return 1
+        done
+    done
+    if [ -n "$active_voice_ports" ]; then
+        add_queue_rule "$tool" udp -m multiport --dports "$active_voice_ports" || return 1
+    fi
+
+    firewall "$tool" -C OUTPUT -m mark --mark "$outbound_mark" -j "$chain" 2>/dev/null ||
+        firewall "$tool" -A OUTPUT -m mark --mark "$outbound_mark" -j "$chain"
+}
+
+diagnostic_rule() {
+    local action="$1"
+    shift
+    # The diagnostic rule never bypasses a missing listener. Ordinary flows
+    # still use the service's existing fail-open queue behavior.
+    set -- "$@" -p tcp --dport 443 -m mark --mark "$diagnostic_mark" -m mark ! --mark "$loop_mark/$loop_mark"
+    if [ "$active_mode" = connbytes ]; then
+        set -- "$@" -m connbytes --connbytes-dir original --connbytes-mode packets --connbytes "1:$window"
+    else
+        set -- "$@" -m limit --limit 128/second --limit-burst 64
+    fi
+    firewall iptables "$action" "$chain" "$@" -j NFQUEUE --queue-num "$active_queue"
+}
+
+diagnostic_status() {
+    local first packets
+    read_active_state && queue_bound "$active_queue" || return 1
+    firewall iptables -C OUTPUT -m mark --mark "$outbound_mark" -j "$chain" >/dev/null 2>&1 || return 1
+    diagnostic_rule -C >/dev/null 2>&1 || return 1
+    first=$(firewall iptables -S "$chain") || return 1
+    printf '%s\n' "$first" | awk -v mark="$diagnostic_mark" '
+        /^-A / {
+            for (field = 1; field < NF; field++)
+                if ($field == "--mark" && $(field+1) == mark) found=1
+            exit !found
+        }
+        END {if (!found) exit 1}' || return 1
+    first=$(firewall iptables -n -v -x --line-numbers -L "$chain") || return 1
+    packets=$(printf '%s\n' "$first" | awk '$1 == "1" && $2 ~ /^[0-9]+$/ && $4 == "NFQUEUE" {print $2; exit}')
+    [ -n "$packets" ] || return 1
+    printf 'running queue=%s packets=%s\n' "$active_queue" "$packets"
+}
+
+add_queue_rule() {
+    local tool="$1"
+    shift
+    local protocol="$1"
+    shift
+    if [ "$#" -eq 1 ]; then set -- --dport "$1"; fi
+    set -- "$chain" -p "$protocol" "$@" -m mark ! --mark "$loop_mark/$loop_mark"
+    if [ "$active_mode" = connbytes ]; then
+        set -- "$@" -m connbytes --connbytes-dir original --connbytes-mode packets --connbytes "1:$window"
+    else
+        set -- "$@" -m limit --limit "$queue_rate" --limit-burst "$queue_burst"
+    fi
+    set -- "$@" -j NFQUEUE --queue-num "$active_queue" --queue-bypass
+    firewall "$tool" -C "$@" 2>/dev/null || firewall "$tool" -A "$@"
+}
+
+detach() {
+    local tool="$1"
+    command -v "$tool" >/dev/null 2>&1 || return 0
+    # Absent chains and families without the mangle table are normal when inactive.
+    firewall "$tool" -S "$chain" >/dev/null 2>&1 || return 0
+    while firewall "$tool" -C OUTPUT -m mark --mark "$outbound_mark" -j "$chain" 2>/dev/null; do
+        firewall "$tool" -D OUTPUT -m mark --mark "$outbound_mark" -j "$chain" || return 1
+    done
+    firewall "$tool" -F "$chain" && firewall "$tool" -X "$chain"
+}
+
+stop_child() {
+    local tries=5
+    if read_active_state; then
+        kill "$child_pid" 2>/dev/null || :
+        while [ "$tries" -gt 0 ] && [ "$(process_identity "$child_pid")" = "$child_identity" ]; do
+            sleep 1
+            tries=$((tries - 1))
+        done
+        if [ "$(process_identity "$child_pid")" = "$child_identity" ]; then
+            kill -KILL "$child_pid" 2>/dev/null || :
+        fi
+    fi
+    rm -f "$state_file"
+}
+
+stop_service() {
+    local rc=0
+    detach iptables || rc=1
+    detach ip6tables || rc=1
+    stop_child || rc=1
+    return "$rc"
+}
+
+detect_mode() {
+    queue_mode=userspace
+    if [ "$(cat "$proc_dir/sys/net/netfilter/nf_conntrack_acct" 2>/dev/null)" = 1 ]; then
+        queue_mode=connbytes
+    fi
+}
+
+configured_mode() {
+    detect_mode
+    if [ "$queue_mode" = userspace ]; then
+        [ "${ROUTEHUB_ZAPRET_MANAGED:-0}" = 1 ] && [ -n "${ROUTEHUB_ZAPRET_ARGS:-}" ] ||
+            { fail "Enable a managed YouTube or Discord strategy when kernel accounting is unavailable"; return 1; }
+        voice_ports=
+    fi
+}
+
+check_profile() {
+    [ -x "$binary" ] || { fail "nfqws2 executable is missing: $binary"; return 1; }
+    [ -r "$queue_file" ] || { fail "The kernel NFQUEUE interface is unavailable"; return 1; }
+    firewall iptables -S OUTPUT >/dev/null || return 1
+    if [ "$ipv6" -eq 1 ]; then firewall ip6tables -S OUTPUT >/dev/null || return 1; fi
+    profile_command check
+}
+
+capability() {
+    load_config || return 1
+    if [ "$enabled" -eq 0 ]; then printf '%s\n' disabled; return 0; fi
+    if [ ! -x "$binary" ]; then printf '%s\n' missing-engine; return 0; fi
+    if [ ! -r "$queue_file" ]; then printf '%s\n' missing-queue; return 0; fi
+    detect_mode
+    printf '%s\n' "$queue_mode"
+}
+
+start_service() {
+    local tries=5
+    if read_active_state && queue_bound "$active_queue"; then
+        [ "$queue:$ipv6:$queue_mode:$voice_ports" = "$active_queue:$active_ipv6:$active_mode:$active_voice_ports" ] ||
+            { fail "Stop and start the service to change its queue or family settings"; return 1; }
+        refresh_rules both
+        return $?
+    fi
+    check_profile || return 1
+    queue_bound "$queue" && { fail "NFQUEUE $queue is already in use"; return 1; }
+    stop_service || return 1
+    active_queue=$queue
+    active_ipv6=$ipv6
+    active_mode=$queue_mode
+    active_voice_ports=$voice_ports
+    profile_command start || return 1
+    child_identity=$(process_identity "$child_pid")
+    if [ -z "$child_identity" ]; then
+        fail "nfqws2 exited during startup"
+        return 1
+    fi
+    if ! printf '%s %s %s %s %s %s\n' "$child_pid" "$child_identity" "$active_queue" "$active_ipv6" "$active_mode" "$active_voice_ports" > "$state_file"; then
+        [ "$(process_identity "$child_pid")" != "$child_identity" ] || kill "$child_pid"
+        return 1
+    fi
+    trap 'stop_service; exit 1' HUP INT TERM
+    while [ "$tries" -gt 0 ] && ! queue_bound "$active_queue" && read_active_state; do
+        sleep 1
+        tries=$((tries - 1))
+    done
+    if ! read_active_state || ! queue_bound "$active_queue" || ! refresh_rules both; then
+        stop_service
+        fail "nfqws2 did not bind its queue or firewall setup failed"
+        return 1
+    fi
+    trap - HUP INT TERM
+}
+
+refresh_rules() {
+    local family="$1"
+    if [ "$family" = both ] || [ "$family" = iptables ]; then
+        attach iptables || return 1
+    fi
+    if [ "$active_ipv6" = 1 ] && { [ "$family" = both ] || [ "$family" = ip6tables ]; }; then
+        attach ip6tables || return 1
+    fi
+}
+
+lock_state() {
+    local attempts=8
+    [ ! -L "$state_dir" ] || return 1
+    command -v flock >/dev/null 2>&1 || { fail "Install the Entware flock package"; return 1; }
+    if [ ! -d "$state_dir" ]; then
+        mkdir -m 700 "$state_dir" 2>/dev/null || [ -d "$state_dir" ] || return 1
+    fi
+    [ ! -L "$state_dir" ] || return 1
+    LC_ALL=C ls -ldn "$state_dir" | awk 'NR == 1 && $1 == "drwx------" && $3 == 0 {ok = 1} END {exit !ok}' || return 1
+    exec 9>"$state_dir/lock" || return 1
+    while ! flock -n 9; do
+        [ "$attempts" -gt 0 ] || { fail "Zapret lifecycle is busy"; return 1; }
+        sleep 1
+        attempts=$((attempts - 1))
+    done
+}
+
+case "${1:-}" in
+    check|start|refresh)
+        load_config || exit 1
+        if [ "$enabled" -eq 0 ]; then
+            case "$1" in
+                refresh) exit 0 ;;
+                check) printf '%s\n' disabled; exit 0 ;;
+                start) fail "Set ENABLED=1 in zapret.conf before starting"; exit 1 ;;
+            esac
+        fi
+        ;;
+esac
+case "${1:-}" in
+    check) configured_mode && check_profile ;;
+    start) configured_mode && lock_state && start_service ;;
+    refresh)
+        case "${2:-}" in iptables|ip6tables) ;; *) exit 0 ;; esac
+        [ -f "$state_file" ] || exit 0
+        lock_state || exit 1
+        if read_active_state && queue_bound "$active_queue"; then refresh_rules "$2"; fi
+        ;;
+    stop)
+        if [ -d "$state_dir" ]; then lock_state || exit 1; fi
+        stop_service
+        ;;
+    status)
+        if read_active_state && queue_bound "$active_queue"; then
+            health=running
+            if ! firewall iptables -C OUTPUT -m mark --mark "$outbound_mark" -j "$chain" >/dev/null 2>&1 ||
+                { [ "$active_ipv6" = 1 ] && ! firewall ip6tables -C OUTPUT -m mark --mark "$outbound_mark" -j "$chain" >/dev/null 2>&1; }; then
+                health=degraded
+            fi
+            if [ "$active_mode" = userspace ]; then
+                printf '%s queue=%s ipv6=%s mode=userspace\n' "$health" "$active_queue" "$active_ipv6"
+            else
+                printf '%s queue=%s ipv6=%s\n' "$health" "$active_queue" "$active_ipv6"
+            fi
+        else
+            printf '%s\n' inactive
+        fi
+        ;;
+    diagnostic) diagnostic_status ;;
+    capability) capability ;;
+    *) fail 'Usage: routehub-zapret {check|start|stop|status|refresh|diagnostic|capability}' ;;
+esac

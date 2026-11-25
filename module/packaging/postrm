@@ -1,0 +1,5 @@
+#!/bin/sh
+
+[ -z "${IPKG_INSTROOT:-}" ] || exit 0
+[ "${1:-}" = remove ] || exit 0
+rm -f /opt/etc/routehub/autostart /opt/etc/routehub/allow-lan

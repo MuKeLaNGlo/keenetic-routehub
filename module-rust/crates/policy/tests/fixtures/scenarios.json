@@ -1,0 +1,2305 @@
+[
+  {
+    "name": "explicit-first-match",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "inherit",
+          "rules": [
+            {
+              "name": "video",
+              "domain": "Video.Example.",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443
+            }
+          ]
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "addresses": [
+            "192.168.10.21"
+          ],
+          "mode": "override",
+          "defaultTarget": "direct",
+          "rules": [
+            {
+              "name": "specific",
+              "cidr": "203.0.113.10/32",
+              "target": "secondary"
+            }
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [
+      {
+        "host": "CDN.VIDEO.EXAMPLE.",
+        "network": "udp",
+        "port": 443
+      },
+      {
+        "host": "cdn.video.example",
+        "network": "udp",
+        "port": 443,
+        "clientMAC": "02:00:00:00:00:aa"
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 80,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "203.0.113.10",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "targetIP": "203.0.113.10",
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "unknown.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.200"
+      },
+      {
+        "host": "evilvideo.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 443,
+        "clientIP": "192.168.10.20",
+        "clientMAC": "02:00:00:00:00:bb"
+      }
+    ],
+    "assets": {}
+  },
+  {
+    "name": "global-only-without-lan",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "inherit",
+          "rules": [
+            {
+              "name": "video",
+              "domain": "Video.Example.",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443
+            }
+          ]
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "addresses": [
+            "192.168.10.21"
+          ],
+          "mode": "override",
+          "defaultTarget": "direct",
+          "rules": [
+            {
+              "name": "specific",
+              "cidr": "203.0.113.10/32",
+              "target": "secondary"
+            }
+          ]
+        }
+      ]
+    },
+    "options": {
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [
+      {
+        "host": "CDN.VIDEO.EXAMPLE.",
+        "network": "udp",
+        "port": 443
+      },
+      {
+        "host": "cdn.video.example",
+        "network": "udp",
+        "port": 443,
+        "clientMAC": "02:00:00:00:00:aa"
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 80,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "203.0.113.10",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "targetIP": "203.0.113.10",
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "unknown.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.200"
+      },
+      {
+        "host": "evilvideo.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 443,
+        "clientIP": "192.168.10.20",
+        "clientMAC": "02:00:00:00:00:bb"
+      }
+    ],
+    "assets": {}
+  },
+  {
+    "name": "observed-collision",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "inherit",
+          "rules": [
+            {
+              "name": "video",
+              "domain": "Video.Example.",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443
+            }
+          ]
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "addresses": [
+            "192.168.10.21"
+          ],
+          "mode": "override",
+          "defaultTarget": "direct",
+          "rules": [
+            {
+              "name": "specific",
+              "cidr": "203.0.113.10/32",
+              "target": "secondary"
+            }
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      },
+      "inventory": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "address": "192.168.10.20",
+          "fixed": true
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "address": "192.168.10.20",
+          "fixed": false
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "address": "192.168.10.21",
+          "fixed": false
+        }
+      ]
+    },
+    "checks": [
+      {
+        "host": "CDN.VIDEO.EXAMPLE.",
+        "network": "udp",
+        "port": 443
+      },
+      {
+        "host": "cdn.video.example",
+        "network": "udp",
+        "port": 443,
+        "clientMAC": "02:00:00:00:00:aa"
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 80,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "203.0.113.10",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "targetIP": "203.0.113.10",
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "unknown.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.200"
+      },
+      {
+        "host": "evilvideo.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 443,
+        "clientIP": "192.168.10.20",
+        "clientMAC": "02:00:00:00:00:bb"
+      }
+    ],
+    "assets": {}
+  },
+  {
+    "name": "empty-trusted-inventory",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "inherit",
+          "rules": [
+            {
+              "name": "video",
+              "domain": "Video.Example.",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443
+            }
+          ]
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "addresses": [
+            "192.168.10.21"
+          ],
+          "mode": "override",
+          "defaultTarget": "direct",
+          "rules": [
+            {
+              "name": "specific",
+              "cidr": "203.0.113.10/32",
+              "target": "secondary"
+            }
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      },
+      "inventory": []
+    },
+    "checks": [
+      {
+        "host": "CDN.VIDEO.EXAMPLE.",
+        "network": "udp",
+        "port": 443
+      },
+      {
+        "host": "cdn.video.example",
+        "network": "udp",
+        "port": 443,
+        "clientMAC": "02:00:00:00:00:aa"
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 80,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "203.0.113.10",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "targetIP": "203.0.113.10",
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "unknown.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.200"
+      },
+      {
+        "host": "evilvideo.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 443,
+        "clientIP": "192.168.10.20",
+        "clientMAC": "02:00:00:00:00:bb"
+      }
+    ],
+    "assets": {}
+  },
+  {
+    "name": "fixed-lease-must-match",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "inherit",
+          "rules": [
+            {
+              "name": "video",
+              "domain": "Video.Example.",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443
+            }
+          ]
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "addresses": [
+            "192.168.10.21"
+          ],
+          "mode": "override",
+          "defaultTarget": "direct",
+          "rules": [
+            {
+              "name": "specific",
+              "cidr": "203.0.113.10/32",
+              "target": "secondary"
+            }
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      },
+      "inventory": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "address": "192.168.10.20",
+          "fixed": true
+        }
+      ]
+    },
+    "checks": [
+      {
+        "host": "CDN.VIDEO.EXAMPLE.",
+        "network": "udp",
+        "port": 443
+      },
+      {
+        "host": "cdn.video.example",
+        "network": "udp",
+        "port": 443,
+        "clientMAC": "02:00:00:00:00:aa"
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 80,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "203.0.113.10",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "targetIP": "203.0.113.10",
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "unknown.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.200"
+      },
+      {
+        "host": "evilvideo.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 443,
+        "clientIP": "192.168.10.20",
+        "clientMAC": "02:00:00:00:00:bb"
+      }
+    ],
+    "assets": {}
+  },
+  {
+    "name": "dormant-global-only-device-rules",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "@block"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "global",
+          "rules": [
+            {
+              "name": "video",
+              "domain": "Video.Example.",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443
+            }
+          ]
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "addresses": [
+            "192.168.10.21"
+          ],
+          "mode": "override",
+          "defaultTarget": "direct",
+          "rules": [
+            {
+              "name": "specific",
+              "cidr": "203.0.113.10/32",
+              "target": "secondary"
+            }
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [
+      {
+        "host": "CDN.VIDEO.EXAMPLE.",
+        "network": "udp",
+        "port": 443
+      },
+      {
+        "host": "cdn.video.example",
+        "network": "udp",
+        "port": 443,
+        "clientMAC": "02:00:00:00:00:aa"
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 80,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "203.0.113.10",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "targetIP": "203.0.113.10",
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "unknown.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.200"
+      },
+      {
+        "host": "evilvideo.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 443,
+        "clientIP": "192.168.10.20",
+        "clientMAC": "02:00:00:00:00:bb"
+      }
+    ],
+    "assets": {}
+  },
+  {
+    "name": "fixed-exit-device",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "@block"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "fixed",
+          "rules": [
+            {
+              "name": "video",
+              "domain": "Video.Example.",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443
+            }
+          ],
+          "defaultTarget": "direct"
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "addresses": [
+            "192.168.10.21"
+          ],
+          "mode": "override",
+          "defaultTarget": "direct",
+          "rules": [
+            {
+              "name": "specific",
+              "cidr": "203.0.113.10/32",
+              "target": "secondary"
+            }
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [
+      {
+        "host": "CDN.VIDEO.EXAMPLE.",
+        "network": "udp",
+        "port": 443
+      },
+      {
+        "host": "cdn.video.example",
+        "network": "udp",
+        "port": 443,
+        "clientMAC": "02:00:00:00:00:aa"
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 80,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "203.0.113.10",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "targetIP": "203.0.113.10",
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "unknown.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.200"
+      },
+      {
+        "host": "evilvideo.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 443,
+        "clientIP": "192.168.10.20",
+        "clientMAC": "02:00:00:00:00:bb"
+      }
+    ],
+    "assets": {}
+  },
+  {
+    "name": "named-sets-and-no-lan-inbound",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        },
+        {
+          "name": "IPs",
+          "set": "ip-list",
+          "target": "secondary"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "inherit",
+          "rules": [
+            {
+              "name": "video",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443,
+              "set": "video-sites"
+            }
+          ]
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "addresses": [
+            "192.168.10.21"
+          ],
+          "mode": "override",
+          "defaultTarget": "direct",
+          "rules": [
+            {
+              "name": "specific",
+              "cidr": "203.0.113.10/32",
+              "target": "secondary"
+            }
+          ]
+        }
+      ],
+      "namedSets": [
+        {
+          "id": "video-sites",
+          "name": "Video",
+          "kind": "domains",
+          "entries": [
+            "video.example",
+            "media.example"
+          ]
+        },
+        {
+          "id": "ip-list",
+          "name": "IP list",
+          "kind": "cidrs",
+          "entries": [
+            "2001:db8::/32",
+            "198.51.100.7"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [
+      {
+        "host": "CDN.VIDEO.EXAMPLE.",
+        "network": "udp",
+        "port": 443
+      },
+      {
+        "host": "cdn.video.example",
+        "network": "udp",
+        "port": 443,
+        "clientMAC": "02:00:00:00:00:aa"
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 80,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "203.0.113.10",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "targetIP": "203.0.113.10",
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "unknown.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.200"
+      },
+      {
+        "host": "evilvideo.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 443,
+        "clientIP": "192.168.10.20",
+        "clientMAC": "02:00:00:00:00:bb"
+      },
+      {
+        "host": "2001:db8::1",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "198.51.100.7",
+        "network": "tcp",
+        "port": 443
+      }
+    ],
+    "assets": {}
+  },
+  {
+    "name": "game-follows-explicit-rules-and-needs-verified-client",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "inherit",
+          "rules": [
+            {
+              "name": "video",
+              "domain": "Video.Example.",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443
+            }
+          ]
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "addresses": [
+            "192.168.10.21"
+          ],
+          "mode": "override",
+          "defaultTarget": "direct",
+          "rules": [
+            {
+              "name": "specific",
+              "cidr": "203.0.113.10/32",
+              "target": "secondary"
+            }
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      },
+      "inventory": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "address": "192.168.10.20",
+          "fixed": true
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "address": "192.168.10.21",
+          "fixed": true
+        }
+      ],
+      "gameRoutes": {
+        "02:00:00:00:00:aa": [
+          {
+            "presetId": "hunt",
+            "name": "Hunt",
+            "destination": "198.51.100.50:61088"
+          },
+          {
+            "presetId": "blocked",
+            "name": "Blocked",
+            "destination": "203.0.113.10:61088"
+          }
+        ],
+        "02:00:00:00:00:bb": [
+          {
+            "presetId": "hunt",
+            "name": "Hunt",
+            "destination": "198.51.100.50:61088"
+          }
+        ]
+      }
+    },
+    "checks": [
+      {
+        "host": "CDN.VIDEO.EXAMPLE.",
+        "network": "udp",
+        "port": 443
+      },
+      {
+        "host": "cdn.video.example",
+        "network": "udp",
+        "port": 443,
+        "clientMAC": "02:00:00:00:00:aa"
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 80,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.20"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "203.0.113.10",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "video.example",
+        "network": "tcp",
+        "port": 443,
+        "targetIP": "203.0.113.10",
+        "clientIP": "192.168.10.21"
+      },
+      {
+        "host": "unknown.example",
+        "network": "tcp",
+        "port": 443,
+        "clientIP": "192.168.10.200"
+      },
+      {
+        "host": "evilvideo.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "video.example",
+        "network": "udp",
+        "port": 443,
+        "clientIP": "192.168.10.20",
+        "clientMAC": "02:00:00:00:00:bb"
+      },
+      {
+        "host": "198.51.100.50",
+        "network": "tcp",
+        "port": 61088,
+        "clientMAC": "02:00:00:00:00:aa"
+      },
+      {
+        "host": "198.51.100.50",
+        "network": "udp",
+        "port": 61088,
+        "clientMAC": "02:00:00:00:00:aa"
+      },
+      {
+        "host": "198.51.100.50",
+        "network": "tcp",
+        "port": 61088,
+        "clientMAC": "02:00:00:00:00:bb"
+      },
+      {
+        "host": "198.51.100.50",
+        "network": "tcp",
+        "port": 61088
+      },
+      {
+        "host": "203.0.113.10",
+        "network": "tcp",
+        "port": 61088,
+        "clientMAC": "02:00:00:00:00:aa"
+      }
+    ],
+    "assets": {}
+  },
+  {
+    "name": "game-without-explicit-device-mode",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      },
+      "inventory": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "address": "192.168.10.20",
+          "fixed": true
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "address": "192.168.10.21",
+          "fixed": true
+        }
+      ],
+      "gameRoutes": {
+        "02:00:00:00:00:aa": [
+          {
+            "presetId": "hunt",
+            "name": "Hunt",
+            "destination": "198.51.100.50:61088"
+          },
+          {
+            "presetId": "blocked",
+            "name": "Blocked",
+            "destination": "203.0.113.10:61088"
+          }
+        ],
+        "02:00:00:00:00:bb": [
+          {
+            "presetId": "hunt",
+            "name": "Hunt",
+            "destination": "198.51.100.50:61088"
+          }
+        ]
+      }
+    },
+    "checks": [
+      {
+        "host": "198.51.100.50",
+        "network": "tcp",
+        "port": 61088,
+        "clientMAC": "02:00:00:00:00:aa"
+      }
+    ],
+    "assets": {}
+  },
+  {
+    "name": "geodata-external-and-inline-equivalence",
+    "config": {
+      "rules": [
+        {
+          "name": "disabled",
+          "domain": "example.org",
+          "target": "@vpn",
+          "disabled": true
+        },
+        {
+          "name": "children",
+          "domain": "*.example.org",
+          "target": "@vpn",
+          "match": "wildcard"
+        },
+        {
+          "name": "idn",
+          "domain": "тест.рф",
+          "target": "@vpn",
+          "match": "exact"
+        },
+        {
+          "name": "keyword",
+          "domain": "NEWS",
+          "target": "@vpn",
+          "match": "keyword"
+        },
+        {
+          "name": "regex",
+          "domain": "^cdn[0-9]+\\.example\\.net$",
+          "target": "@vpn",
+          "match": "regex"
+        },
+        {
+          "name": "dkim",
+          "domain": "_DomainKey.YouTube.com.",
+          "target": "zapret"
+        },
+        {
+          "name": "Exception",
+          "domain": "local.limited.example",
+          "target": "direct",
+          "exact": true
+        },
+        {
+          "name": "Blocked site",
+          "geoSite": "ru-blocked",
+          "geoSource": "site",
+          "target": "zapret"
+        },
+        {
+          "name": "Blocked IP",
+          "geoIP": "ru-blocked",
+          "geoSource": "ip",
+          "target": "@block"
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      },
+      "geoSources": {
+        "site": true,
+        "ip": true
+      },
+      "geoSites": {
+        "site": {
+          "RU-BLOCKED": [
+            [
+              "limited.example",
+              "suffix"
+            ],
+            [
+              "one.example",
+              "exact"
+            ],
+            [
+              "trending",
+              "keyword"
+            ],
+            [
+              "^cdn[0-9]+\\.example$",
+              "regex"
+            ],
+            [
+              "*.wild.example",
+              "wildcard"
+            ]
+          ]
+        }
+      },
+      "geoData": {
+        "ip": {
+          "RU-BLOCKED": [
+            "203.0.113.0/24",
+            "2001:db8::/32"
+          ]
+        }
+      }
+    },
+    "checks": [
+      {
+        "host": "example.org",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "images.example.org",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "wrongexample.org",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "тест.рф",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "a.тест.рф",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "mynews.example.net",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "cdn22.example.net",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "cdn.example.net",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "selector._domainkey.youtube.com",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "youtube.com",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "local.limited.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "sub.limited.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "one.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "a.one.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "trending.test.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "cdn25.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "wild.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "a.b.wild.example",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "2001:db8::47",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "::ffff:203.0.113.14",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "fe80::8%lan",
+        "network": "tcp",
+        "port": 443
+      },
+      {
+        "host": "example.net",
+        "network": "tcp",
+        "port": 443,
+        "targetIP": "203.0.113.40"
+      },
+      {
+        "host": "203.0.113.3",
+        "network": "tcp",
+        "port": 443,
+        "targetIP": "203.0.113.40"
+      },
+      {
+        "host": "apple.example",
+        "network": "tcp",
+        "port": 0
+      },
+      {
+        "host": "apple.example",
+        "network": "sctp",
+        "port": 443
+      }
+    ],
+    "assets": {
+      "site": "sites.dat",
+      "ip": "ips.dat"
+    }
+  },
+  {
+    "name": "bare-default",
+    "config": {
+      "rules": null,
+      "devices": null,
+      "namedSets": null
+    },
+    "options": {},
+    "checks": [
+      {
+        "host": "198.51.100.2",
+        "network": "tcp",
+        "port": 443
+      }
+    ],
+    "assets": {}
+  },
+  {
+    "name": "duplicate-mac",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "inherit",
+          "rules": [
+            {
+              "name": "video",
+              "domain": "Video.Example.",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443
+            }
+          ]
+        },
+        {
+          "mac": "02-00-00-00-00-AA",
+          "addresses": [
+            "192.168.10.21"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "duplicate-ip",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "inherit",
+          "rules": [
+            {
+              "name": "video",
+              "domain": "Video.Example.",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443
+            }
+          ]
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "addresses": [
+            "192.168.10.20"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "eui64",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "multicast-mac",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "ff:ff:ff:ff:ff:ff",
+          "addresses": [
+            "192.168.10.20"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "zero-mac",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "00:00:00:00:00:00",
+          "addresses": [
+            "192.168.10.20"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "router-address",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.1"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "network-address",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.0"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "broadcast-address",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.255"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "outside-lan",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.11.5"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "ipv6-source",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "fd00::1"
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "missing-device-default",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "override"
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "inherit-with-default",
+    "config": {
+      "defaultTarget": "vpn",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "inherit",
+          "defaultTarget": "direct"
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "unknown-fallback",
+    "config": {
+      "defaultTarget": "missing",
+      "rules": [
+        {
+          "name": "video",
+          "domain": "video.example",
+          "target": "zapret"
+        },
+        {
+          "name": "control",
+          "cidr": "203.0.113.0/24",
+          "target": "direct"
+        }
+      ],
+      "devices": [
+        {
+          "mac": "02:00:00:00:00:aa",
+          "addresses": [
+            "192.168.10.20"
+          ],
+          "mode": "inherit",
+          "rules": [
+            {
+              "name": "video",
+              "domain": "Video.Example.",
+              "target": "secondary",
+              "network": "udp",
+              "port": 443
+            }
+          ]
+        },
+        {
+          "mac": "02:00:00:00:00:bb",
+          "addresses": [
+            "192.168.10.21"
+          ],
+          "mode": "override",
+          "defaultTarget": "direct",
+          "rules": [
+            {
+              "name": "specific",
+              "cidr": "203.0.113.10/32",
+              "target": "secondary"
+            }
+          ]
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "dupe-rule-name",
+    "config": {
+      "rules": [
+        {
+          "name": " name",
+          "domain": "example.org",
+          "target": "vpn"
+        },
+        {
+          "name": "name ",
+          "domain": "example.net",
+          "target": "direct"
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "multiple-conditions",
+    "config": {
+      "rules": [
+        {
+          "name": "one",
+          "domain": "example.org",
+          "target": "vpn",
+          "cidr": "203.0.113.0/24"
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "noncanonical-ip",
+    "config": {
+      "rules": [
+        {
+          "name": "one",
+          "cidr": "203.0.113.1/24",
+          "target": "vpn"
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "missing-set",
+    "config": {
+      "rules": [
+        {
+          "name": "one",
+          "set": "absent",
+          "target": "vpn"
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "empty-set",
+    "config": {
+      "rules": [
+        {
+          "name": "one",
+          "set": "empty",
+          "target": "vpn"
+        }
+      ],
+      "namedSets": [
+        {
+          "id": "empty",
+          "name": "Empty",
+          "kind": "domains",
+          "entries": []
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "invalid-domain-format",
+    "config": {
+      "rules": [
+        {
+          "name": "invalid",
+          "domain": "example._org",
+          "target": "vpn"
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "invalid-regex",
+    "config": {
+      "rules": [
+        {
+          "name": "invalid",
+          "domain": "(?=.*example)",
+          "target": "vpn",
+          "match": "regex"
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  },
+  {
+    "name": "missing-geodata-source",
+    "config": {
+      "rules": [
+        {
+          "name": "one",
+          "geoSite": "missing",
+          "geoSource": "wrong",
+          "target": "vpn"
+        }
+      ]
+    },
+    "options": {
+      "lan": "192.168.10.0/24",
+      "routerIp": "192.168.10.1",
+      "targets": {
+        "vpn": "hysteria2",
+        "secondary": "trojan",
+        "@vpn": "vless"
+      }
+    },
+    "checks": [],
+    "assets": {}
+  }
+]

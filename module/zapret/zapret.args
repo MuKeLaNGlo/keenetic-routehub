@@ -1,0 +1,3 @@
+# One trusted nfqws2 argument per line, with an equals sign when it takes a value.
+# Import a profile verified for your internet connection. Keep this file root-only.
+# The service supplies --qnum and --fwmark. It validates the profile before start.

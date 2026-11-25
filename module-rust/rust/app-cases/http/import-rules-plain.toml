@@ -1,0 +1,29 @@
+[request]
+method = "POST"
+path = "/api/import"
+body = """
+--test123\r
+Content-Disposition: form-data; name="target"\r
+\r
+@block\r
+--test123\r
+Content-Disposition: form-data; name="file"; filename="routes.txt"\r
+\r
+example.net
+203.0.113.0/24\r
+--test123--\r
+"""
+
+[request.headers]
+Content-Type = "multipart/form-data; boundary=test123"
+Origin = "http://127.0.0.1:18387"
+X-RouteHub-Key = "local-fixture-key-not-used-on-router"
+
+[response]
+status = 200
+
+[response.headers]
+cache-control = "no-store"
+content-security-policy = "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; font-src data:; img-src data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"
+content-type = "application/json; charset=utf-8"
+x-content-type-options = "nosniff"

@@ -1,0 +1,118 @@
+#!/bin/sh
+
+PATH=/opt/sbin:/opt/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export PATH
+umask 077
+
+daemon=/opt/sbin/routehub
+config=/opt/etc/routehub/config.json
+autostart=/opt/etc/routehub/autostart
+allow_lan=/opt/etc/routehub/allow-lan
+panel_key=/opt/etc/routehub/panel.key
+pidfile=/opt/var/run/routehub.pid
+log=/opt/var/log/routehub.log
+lock=/tmp/routehub-init.lock
+
+service_pid() {
+    [ -r "$pidfile" ] || return 1
+    read -r pid < "$pidfile" || return 1
+    case "$pid" in ''|*[!0-9]*|0|1) return 1 ;; esac
+    exe=$(readlink "/proc/$pid/exe") || return 1
+    case "$exe" in
+        "$daemon"|"$daemon (deleted)") printf '%s\n' "$pid" ;;
+        *) return 1 ;;
+    esac
+}
+
+start_service() {
+    service_pid >/dev/null 2>&1 && return 0
+    if [ ! -x "$daemon" ] || [ ! -r "$config" ]; then
+        echo "RouteHub executable or configuration is missing" >&2
+        return 1
+    fi
+
+    (umask 022; mkdir -p /opt/var/run /opt/var/log) || return 1
+    set -- serve -config "$config" -log-file "$log"
+    [ ! -f "$allow_lan" ] || set -- "$@" -allow-lan
+    [ ! -f "$panel_key" ] || set -- "$@" -panel-key-file "$panel_key"
+    nohup "$daemon" "$@" </dev/null >/dev/null 2>&1 &
+    pid=$!
+    if ! printf '%s\n' "$pid" > "$pidfile"; then
+        kill -TERM "$pid" 2>/dev/null
+        return 1
+    fi
+    sleep 1
+    if ! service_pid >/dev/null 2>&1; then
+        rm -f "$pidfile"
+        echo "RouteHub exited during startup. See $log." >&2
+        return 1
+    fi
+}
+
+boot_enabled() {
+    [ -f "$autostart" ] || {
+        [ -x "$daemon" ] && [ "$("$daemon" boot-enabled -config "$config")" = enabled ]
+    }
+}
+
+stop_service() {
+    if pid=$(service_pid 2>/dev/null); then
+        kill -TERM "$pid" 2>/dev/null
+        remaining=12
+        while service_pid >/dev/null 2>&1; do
+            if [ "$remaining" -eq 0 ]; then
+                echo "RouteHub did not stop. See $log." >&2
+                return 1
+            fi
+            sleep 1
+            remaining=$((remaining - 1))
+        done
+    fi
+    if [ -f /opt/var/run/routehub-transparent.active ] &&
+        [ -x /opt/lib/routehub/routehub-transparent ]; then
+        /opt/lib/routehub/routehub-transparent stop || return 1
+    fi
+    if [ -f /opt/var/run/routehub-redirect-tcp.active ] &&
+        [ -x /opt/lib/routehub/routehub-redirect-tcp ]; then
+        /opt/lib/routehub/routehub-redirect-tcp stop || return 1
+    fi
+    rm -f "$pidfile"
+}
+
+case "${1:-}" in
+    start|restart|stop|start-once|enable|disable)
+        if ! mkdir "$lock" 2>/dev/null; then
+            echo "A RouteHub service operation is already in progress" >&2
+            exit 1
+        fi
+        trap 'rmdir "$lock"' EXIT
+        trap 'exit 1' HUP INT TERM
+        ;;
+    status|check)
+        if pid=$(service_pid 2>/dev/null); then
+            printf 'RouteHub is running (PID %s)\n' "$pid"
+            exit 0
+        fi
+        printf 'RouteHub is stopped\n'
+        exit 1
+        ;;
+    *)
+        printf 'Usage: %s {start|start-once|stop|restart|enable|disable|status}\n' "$0" >&2
+        exit 2
+        ;;
+esac
+
+case "$1" in
+    start) if boot_enabled; then start_service; fi ;;
+    start-once) start_service ;;
+    stop) stop_service ;;
+    restart)
+        restart_enabled=no
+        if boot_enabled || service_pid >/dev/null 2>&1; then
+            restart_enabled=yes
+        fi
+        stop_service && { [ "$restart_enabled" = no ] || start_service; }
+        ;;
+    enable) touch "$autostart" ;;
+    disable) rm -f "$autostart" && stop_service ;;
+esac

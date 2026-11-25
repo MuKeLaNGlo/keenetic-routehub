@@ -1,0 +1,242 @@
+#!/bin/sh
+set -eu
+PATH=/opt/sbin:/opt/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export PATH
+umask 077
+
+run=/opt/var/run
+state=$run/routehub-redirect-tcp.active
+lock=$run/routehub-transparent.lock
+chain=RH_TCP_REDIRECT
+guard=RH_TCP_REDIRECT_IN
+
+nat() { iptables -w -t nat "$@"; }
+filter() { iptables -w -t filter "$@"; }
+
+owner_stamp() {
+    awk '{sub(/^.*\) /,""); if ($1!="Z" && $20 ~ /^[0-9]+$/) print $20}' "/proc/$1/stat" 2>/dev/null || true
+}
+
+read_state() {
+    read -r interface source listener port owner stamp phase < "$state"
+}
+
+write_state() {
+    pending=$(mktemp "$run/.routehub-redirect-tcp.XXXXXX") || return 1
+    if ! printf '%s %s %s %s %s %s %s\n' "$interface" "$source" "$listener" "$port" "$owner" "$stamp" "$1" > "$pending" ||
+        ! mv -f "$pending" "$state"; then
+        rm -f "$pending"
+        return 1
+    fi
+}
+
+owner_alive() {
+    [ -n "$stamp" ] && [ "$(owner_stamp "$owner")" = "$stamp" ]
+}
+
+# Keep the destination on this bridge and the source CIDR within its
+# private IPv4 subnet, including the single-device /32 canary case.
+valid_scope() {
+    ip -4 -o addr show dev "$interface" | awk -v src="$source" -v dst="$listener" '
+        function ipv4(value,a,i,result) {
+            if (split(value,a,".")!=4) return -1
+            for (i=1; i<=4; i++) {
+                if (a[i]!~/^[0-9]+$/ || a[i]>255 || a[i]~/^0[0-9]/) return -1
+                result=result*256+a[i]
+            }
+            return result
+        }
+        BEGIN {
+            if (split(src,s,"/")!=2 || s[2]!~/^([89]|[12][0-9]|3[0-2])$/) exit 1
+            address=ipv4(s[1]); host=ipv4(dst); size=2^(32-s[2])
+            if (address<0 || address!=int(address/size)*size) exit 1
+            if (!((address>=167772160 && address+size<=184549376) ||
+                  (address>=2886729728 && address+size<=2887778304) ||
+                  (address>=3232235520 && address+size<=3232301056))) exit 1
+        }
+        $3=="inet" && split($4,link,"/")==2 && link[1]==dst &&
+            link[2]~/^([89]|[12][0-9]|3[0-2])$/ {
+            linkSize=2^(32-link[2]); start=int(host/linkSize)*linkSize
+            if (address>=start && address+size<=start+linkSize) ok=1
+        }
+        END {if (!ok) exit 1}'
+}
+
+listener_ready() {
+    owner_alive || return 1
+    engine_owner=$(awk '{sub(/^.*\) /,""); print $2}' "/proc/$1/stat" 2>/dev/null) || return 1
+    [ "$engine_owner" = "$owner" ] || return 1
+    endpoint=$(printf '%s\n' "$listener" | awk -F. -v p="$port" '{printf "%02X%02X%02X%02X:%04X",$4,$3,$2,$1,p}')
+    links=$(ls -l "/proc/$1/fd" 2>/dev/null) || return 1
+    printf '%s\n' "$links" | awk -v endpoint="$endpoint" '
+        FNR==NR {
+            if (match($0,/socket:\[[0-9]+\]$/)) owned[substr($0,RSTART+8,RLENGTH-9)]=1
+            next
+        }
+        $2==endpoint && $4=="0A" && $10 in owned {seen=1}
+        END {if (!seen) exit 1}
+    ' - "/proc/$1/net/tcp" 2>/dev/null
+}
+
+guard_anchor() {
+    operation=$1; shift
+    filter "$operation" INPUT "$@" -d "$listener" -p tcp --dport "$port" -j "$guard"
+}
+
+guard_allow() {
+    operation=$1; shift
+    filter "$operation" "$guard" "$@" -i "$interface" -s "$source" -p tcp         -m conntrack --ctstate DNAT --ctdir ORIGINAL ! --ctorigdst "$listener" -j ACCEPT
+}
+
+guard_attach() {
+    if ! filter -S "$guard" >/dev/null 2>&1; then
+        filter -N "$guard" || return 1
+    fi
+    # Keep a DROP in the owned chain while rebuilding an incomplete rule set.
+    if ! filter -C "$guard" -j DROP >/dev/null 2>&1; then
+        filter -A "$guard" -j DROP || return 1
+    fi
+    if ! guard_allow -C >/dev/null 2>&1; then
+        guard_allow -I 1 || return 1
+    fi
+    if ! guard_anchor -C >/dev/null 2>&1; then
+        guard_anchor -I 1 || return 1
+    fi
+}
+
+nat_anchor() {
+    operation=$1; shift
+    nat "$operation" PREROUTING "$@" -i "$interface" -s "$source" -p tcp -j "$chain"
+}
+
+competing_proxy() {
+    [ -e "$run/routehub-transparent.active" ] ||
+        (iptables-save -t mangle; iptables-save -t nat) | grep -q '^:STEALTHSURF_'
+}
+
+nat_attach() {
+    if competing_proxy; then
+        nat_detach && purge_redirected_flows
+        return 1
+    fi
+    if nat_anchor -C >/dev/null 2>&1 &&
+        nat -C "$chain" -p tcp -j DNAT --to-destination "$listener:$port" >/dev/null 2>&1; then
+        return 0
+    fi
+    nat_detach || return 1
+    nat -N "$chain" || return 1
+    if ! nat -A "$chain" -m addrtype --dst-type LOCAL -j RETURN 2>/dev/null; then
+        routes=$(ip -4 route show table local) || return 1
+        printf '%s\n' "$routes" | awk '$1=="local" || $1=="broadcast" {print $2}' |
+            while IFS= read -r address; do
+                nat -A "$chain" -d "$address" -j RETURN || exit 1
+            done || return 1
+    fi
+    for address in 0.0.0.0/8 10.0.0.0/8 100.64.0.0/10 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 224.0.0.0/3; do
+        nat -A "$chain" -d "$address" -j RETURN || return 1
+    done
+    nat -A "$chain" -p tcp --dport 53 -j RETURN || return 1
+    nat -A "$chain" -p tcp -j DNAT --to-destination "$listener:$port" || return 1
+    nat_anchor -I 1
+}
+
+nat_detach() {
+    while nat_anchor -C >/dev/null 2>&1; do
+        nat_anchor -D || return 1
+    done
+    if nat -S "$chain" >/dev/null 2>&1; then
+        nat -F "$chain" || return 1
+        nat -X "$chain" || return 1
+    fi
+}
+
+purge_redirected_flows() {
+    command -v conntrack >/dev/null 2>&1 || return 0
+    conntrack -D -f ipv4 -p tcp --orig-src "$source" --reply-src "$listener"         --reply-port-src "$port" --dst-nat >/dev/null 2>&1 || true
+}
+
+cleanup() {
+    nat_detach || return 1
+    if [ "$phase" = active ]; then purge_redirected_flows; fi
+    while guard_anchor -C >/dev/null 2>&1; do
+        guard_anchor -D || return 1
+    done
+    if filter -S "$guard" >/dev/null 2>&1; then
+        filter -F "$guard" || return 1
+        filter -X "$guard" || return 1
+    fi
+    rm -f "$state"
+}
+
+action=${1:-}
+if [ "$action" = watch ]; then
+    [ -s "$state" ] || exit 0
+    read_state
+    while owner_alive && [ -s "$state" ]; do sleep 1; done
+    if [ -s "$state" ]; then "$0" stop-if "$owner" "$stamp"; fi
+    exit 0
+fi
+case "$action" in
+    prepare|activate|deactivate|refresh|stop|stop-if) ;;
+    *) echo 'usage: routehub-redirect-tcp prepare INTERFACE CIDR LISTENER PORT PID | activate XRAY_PID | deactivate | refresh | stop' >&2; exit 2 ;;
+esac
+[ "$action" = prepare ] || [ -s "$state" ] || exit 0
+mkdir -p "$run"
+attempt=0
+until mkdir "$lock" 2>/dev/null; do
+    attempt=$((attempt+1))
+    [ "$attempt" -lt 3 ] || exit 1
+    sleep 1
+done
+trap 'rmdir "$lock"' EXIT
+trap 'exit 1' INT TERM
+
+case "$action" in
+    prepare)
+        [ "$#" -eq 6 ] && [ ! -e "$state" ]
+        interface=$2 source=$3 listener=$4 port=$5 owner=$6
+        printf '%s\n' "$interface" | grep -Eq '^[[:alnum:]_][[:alnum:]_.-]{0,14}$'
+        printf '%s\n' "$port" "$owner" | awk '!/^[1-9][0-9]*$/ {exit 1}'
+        [ "$port" -le 65535 ] && [ "$port" -ne 53 ]
+        valid_scope
+        stamp=$(owner_stamp "$owner")
+        [ -n "$stamp" ]
+        if competing_proxy || nat -S "$chain" >/dev/null 2>&1 || filter -S "$guard" >/dev/null 2>&1; then
+            echo 'RouteHub: конфликт перехвата TCP REDIRECT' >&2
+            exit 1
+        fi
+        phase=pending
+        write_state "$phase"
+        trap 'if [ -s "$state" ]; then cleanup || true; fi; rmdir "$lock"' EXIT
+        guard_attach
+        "$0" watch >/dev/null 2>&1 </dev/null &
+        trap 'rmdir "$lock"' EXIT
+        ;;
+    activate)
+        [ "$#" -eq 2 ] && printf '%s\n' "$2" | grep -Eq '^[1-9][0-9]*$'
+        read_state
+        [ "$phase" = pending ] && listener_ready "$2"
+        guard_attach
+        if ! nat_attach; then nat_detach; exit 1; fi
+        if ! write_state active; then nat_detach; purge_redirected_flows; exit 1; fi
+        ;;
+    deactivate)
+        read_state
+        nat_detach
+        if [ "$phase" = active ]; then purge_redirected_flows; fi
+        write_state pending
+        ;;
+    refresh)
+        read_state
+        if ! owner_alive; then cleanup; exit 0; fi
+        if ! guard_attach; then nat_detach; exit 1; fi
+        if [ "$phase" = active ] && ! nat_attach; then nat_detach; exit 1; fi
+        ;;
+    stop|stop-if)
+        read_state
+        if [ "$action" = stop-if ]; then
+            [ "${2:-}" = "$owner" ] && [ "${3:-}" = "$stamp" ] || exit 0
+        fi
+        cleanup
+        ;;
+esac

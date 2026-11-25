@@ -1,0 +1,20 @@
+{
+  "panelPort": 18952,
+  "socksPort": 18953,
+  "zapret": false,
+  "profiles": [
+    {"id": "vless-main", "protocol": "vless", "uri": "vless://00000000-0000-4000-8000-000000000001@vless.example:443?type=tcp&security=tls&sni=vless.example"},
+    {"id": "hy2-media", "protocol": "hysteria2", "uri": "hy2://example-password@hy2.example:443?sni=hy2.example"},
+    {"id": "trojan-secondary", "protocol": "trojan", "uri": "trojan://example-password@trojan.example:443?sni=trojan.example"},
+    {"id": "awg-private", "protocol": "amneziawg", "interface": "wg0"}
+  ],
+  "rules": [
+    {"name": "YouTube", "domain": "youtube.com", "target": "zapret"},
+    {"name": "YouTube video", "domain": "googlevideo.com", "target": "zapret"},
+    {"name": "Discord", "domain": "discord.com", "target": "zapret"},
+    {"name": "VLESS sample", "domain": "service-one.example", "target": "vless-main"},
+    {"name": "Hysteria2 sample", "domain": "service-two.example", "target": "hy2-media"},
+    {"name": "Trojan sample", "domain": "service-three.example", "target": "trojan-secondary"},
+    {"name": "AmneziaWG sample", "cidr": "192.0.2.0/24", "target": "awg-private"}
+  ]
+}

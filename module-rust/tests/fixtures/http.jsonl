@@ -1,0 +1,26 @@
+{"name": "status", "method": "GET", "path": "/api/status"}
+{"name": "public-plan", "method": "GET", "path": "/api/plan"}
+{"name": "runtime", "method": "GET", "path": "/api/runtime"}
+{"name": "session", "method": "GET", "path": "/api/panel/session"}
+{"name": "events-no-session", "method": "GET", "path": "/api/panel/events"}
+{"name": "revisions-empty", "method": "GET", "path": "/api/panel/revisions", "headers": {"X-RouteHub-Key": "local-fixture-key-not-used-on-router"}}
+{"name": "log-storage-disabled", "method": "GET", "path": "/api/panel/log-storage", "headers": {"X-RouteHub-Key": "local-fixture-key-not-used-on-router"}}
+{"name": "direct-domain", "method": "POST", "path": "/api/evaluate", "headers": {"Content-Type": "application/json"}, "body": "{\"host\": \"huntshowdown.com\", \"network\": \"tcp\", \"port\": 443}"}
+{"name": "direct-suffix", "method": "POST", "path": "/api/evaluate", "headers": {"Content-Type": "application/json"}, "body": "{\"host\": \"edge.eu.huntshowdown.com\", \"network\": \"tcp\", \"port\": 443}"}
+{"name": "lookalike-domain", "method": "POST", "path": "/api/evaluate", "headers": {"Content-Type": "application/json"}, "body": "{\"host\": \"evilhuntshowdown.com\", \"network\": \"tcp\", \"port\": 443}"}
+{"name": "block-cidr", "method": "POST", "path": "/api/evaluate", "headers": {"Content-Type": "application/json"}, "body": "{\"host\": \"203.0.113.5\", \"network\": \"tcp\", \"port\": 80}"}
+{"name": "block-port", "method": "POST", "path": "/api/evaluate", "headers": {"Content-Type": "application/json"}, "body": "{\"host\": \"198.51.100.7\", \"network\": \"udp\", \"port\": 53}"}
+{"name": "invalid-port", "method": "POST", "path": "/api/evaluate", "headers": {"Content-Type": "application/json"}, "body": "{\"host\": \"198.51.100.7\", \"network\": \"udp\", \"port\": 0}"}
+{"name": "devices-loopback", "method": "GET", "path": "/api/devices"}
+{"name": "geo-empty", "method": "GET", "path": "/api/geoip"}
+{"name": "geo-source-required", "method": "POST", "path": "/api/geoip/update", "headers": {"X-RouteHub-Key": "local-fixture-key-not-used-on-router", "Content-Type": "application/json", "Origin": "http://127.0.0.1:18387"}, "body": "{}"}
+{"name": "dns-defaults", "method": "GET", "path": "/api/dns"}
+{"name": "boot-check-disabled", "method": "POST", "path": "/api/runtime/boot/check", "headers": {"X-RouteHub-Key": "local-fixture-key-not-used-on-router", "Content-Type": "application/json", "Origin": "http://127.0.0.1:18387"}, "body": "{}"}
+{"name": "zapret-check-disabled", "method": "POST", "path": "/api/zapret/check", "headers": {"X-RouteHub-Key": "local-fixture-key-not-used-on-router", "Content-Type": "application/json", "Origin": "http://127.0.0.1:18387"}, "body": "{\"service\": \"youtube\"}"}
+{"name": "zapret-invalid-service", "method": "POST", "path": "/api/zapret/check", "headers": {"X-RouteHub-Key": "local-fixture-key-not-used-on-router", "Content-Type": "application/json", "Origin": "http://127.0.0.1:18387"}, "body": "{\"service\": \"unsupported\"}"}
+{"name": "saved-checks-empty", "method": "GET", "path": "/api/panel/saved-checks/results", "headers": {"X-RouteHub-Key": "local-fixture-key-not-used-on-router"}}
+{"name": "subscriptions-empty", "method": "GET", "path": "/api/panel/subscriptions", "headers": {"X-RouteHub-Key": "local-fixture-key-not-used-on-router"}}
+{"name": "invalid-payload", "method": "POST", "path": "/api/evaluate", "headers": {"Content-Type": "application/json"}, "body": "{\"network\": \"tcp\", \"port\": 443, \"unknownFlag\": true}"}
+{"name": "rule-backup", "method": "POST", "path": "/api/backup", "headers": {"X-RouteHub-Key": "local-fixture-key-not-used-on-router", "Content-Type": "application/json", "Origin": "http://127.0.0.1:18387"}, "body": "{\"scope\": \"rules\"}"}
+{"name": "profile-latency-missing", "method": "POST", "path": "/api/runtime/latency", "headers": {"X-RouteHub-Key": "local-fixture-key-not-used-on-router", "Content-Type": "application/json", "Origin": "http://127.0.0.1:18387"}, "body": "{\"profile\": \"nonexistent\"}"}
+{"name": "import-rules-plain", "method": "POST", "path": "/api/import", "headers": {"X-RouteHub-Key": "local-fixture-key-not-used-on-router", "Content-Type": "multipart/form-data; boundary=test123", "Origin": "http://127.0.0.1:18387"}, "body": "--test123\r\nContent-Disposition: form-data; name=\"target\"\r\n\r\n@block\r\n--test123\r\nContent-Disposition: form-data; name=\"file\"; filename=\"routes.txt\"\r\n\r\nexample.net\n203.0.113.0/24\r\n--test123--\r\n"}

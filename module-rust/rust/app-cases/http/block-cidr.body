@@ -1,0 +1,1 @@
+{"rule":"Drop network","target":"@block","scope":"global","configuredTarget":"@block"}

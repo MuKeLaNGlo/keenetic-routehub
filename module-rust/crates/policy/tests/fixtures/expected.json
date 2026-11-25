@@ -1,0 +1,2254 @@
+{
+  "bare-default": {
+    "assetRules": [
+      {
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "scope": "global",
+        "target": "direct"
+      }
+    ],
+    "devices": [],
+    "globalRules": [
+      {
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "type": "field"
+      }
+    ]
+  },
+  "broadcast-address": {
+    "error": "некорректный адрес LAN \"192.168.10.255\" устройства 02:00:00:00:00:aa"
+  },
+  "dormant-global-only-device-rules": {
+    "assetRules": [
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "outboundTag": "secondary",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "@block",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "@block"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "@block"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "@block"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "@block"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "scope": "device",
+        "target": "direct"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "protocol": "trojan",
+        "rule": "specific",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "protocol": "trojan",
+        "rule": "specific",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "error": "указанные MAC и IP не принадлежат одному активному устройству"
+      }
+    ],
+    "devices": [
+      {
+        "active": false,
+        "addresses": [
+          "192.168.10.20"
+        ],
+        "mac": "02:00:00:00:00:aa",
+        "mode": "global",
+        "reason": "global-only"
+      },
+      {
+        "active": true,
+        "addresses": [
+          "192.168.10.21"
+        ],
+        "mac": "02:00:00:00:00:bb",
+        "mode": "override"
+      }
+    ],
+    "globalRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "@block",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "outboundTag": "secondary",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "@block",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ]
+  },
+  "dupe-rule-name": {
+    "error": "имена правил должны быть заполнены и уникальны в своей области"
+  },
+  "duplicate-ip": {
+    "error": "адрес 192.168.10.20 повторно назначен устройствам 02:00:00:00:00:aa и 02:00:00:00:00:bb"
+  },
+  "duplicate-mac": {
+    "error": "повторный MAC устройства \"02:00:00:00:00:aa\""
+  },
+  "empty-set": {
+    "error": "правило \"one\" ссылается на пустой набор"
+  },
+  "empty-trusted-inventory": {
+    "assetRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "control",
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      }
+    ],
+    "devices": [
+      {
+        "active": false,
+        "addresses": [
+          "192.168.10.20"
+        ],
+        "mac": "02:00:00:00:00:aa",
+        "mode": "inherit",
+        "reason": "unverified-address"
+      },
+      {
+        "active": false,
+        "addresses": [
+          "192.168.10.21"
+        ],
+        "mac": "02:00:00:00:00:bb",
+        "mode": "override",
+        "reason": "unverified-address"
+      }
+    ],
+    "globalRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ]
+  },
+  "eui64": {
+    "error": "некорректный MAC устройства \"02:00:00:00:00:00:00:aa\""
+  },
+  "explicit-first-match": {
+    "assetRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "udp",
+        "outboundTag": "secondary",
+        "port": "443",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "outboundTag": "secondary",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "protocol": "trojan",
+        "rule": "video",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "scope": "device",
+        "target": "direct"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "protocol": "trojan",
+        "rule": "specific",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "protocol": "trojan",
+        "rule": "specific",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "error": "указанные MAC и IP не принадлежат одному активному устройству"
+      }
+    ],
+    "devices": [
+      {
+        "active": true,
+        "addresses": [
+          "192.168.10.20"
+        ],
+        "mac": "02:00:00:00:00:aa",
+        "mode": "inherit"
+      },
+      {
+        "active": true,
+        "addresses": [
+          "192.168.10.21"
+        ],
+        "mac": "02:00:00:00:00:bb",
+        "mode": "override"
+      }
+    ],
+    "globalRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "udp",
+        "outboundTag": "secondary",
+        "port": "443",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "outboundTag": "secondary",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ]
+  },
+  "fixed-exit-device": {
+    "assetRules": [
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "outboundTag": "secondary",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "@block",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "@block"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "scope": "device",
+        "target": "direct"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "scope": "device",
+        "target": "direct"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "scope": "device",
+        "target": "direct"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "scope": "device",
+        "target": "direct"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "protocol": "trojan",
+        "rule": "specific",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "protocol": "trojan",
+        "rule": "specific",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "error": "указанные MAC и IP не принадлежат одному активному устройству"
+      }
+    ],
+    "devices": [
+      {
+        "active": true,
+        "addresses": [
+          "192.168.10.20"
+        ],
+        "mac": "02:00:00:00:00:aa",
+        "mode": "fixed"
+      },
+      {
+        "active": true,
+        "addresses": [
+          "192.168.10.21"
+        ],
+        "mac": "02:00:00:00:00:bb",
+        "mode": "override"
+      }
+    ],
+    "globalRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "@block",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "outboundTag": "secondary",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "@block",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ]
+  },
+  "fixed-lease-must-match": {
+    "assetRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "udp",
+        "outboundTag": "secondary",
+        "port": "443",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "protocol": "trojan",
+        "rule": "video",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "control",
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "error": "указанные MAC и IP не принадлежат одному активному устройству"
+      }
+    ],
+    "devices": [
+      {
+        "active": true,
+        "addresses": [
+          "192.168.10.20"
+        ],
+        "gameRouteEligible": true,
+        "mac": "02:00:00:00:00:aa",
+        "mode": "inherit"
+      },
+      {
+        "active": false,
+        "addresses": [
+          "192.168.10.21"
+        ],
+        "mac": "02:00:00:00:00:bb",
+        "mode": "override",
+        "reason": "unverified-address"
+      }
+    ],
+    "globalRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "udp",
+        "outboundTag": "secondary",
+        "port": "443",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ]
+  },
+  "game-follows-explicit-rules-and-needs-verified-client": {
+    "assetRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "udp",
+        "outboundTag": "secondary",
+        "port": "443",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "outboundTag": "secondary",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "198.51.100.50/32"
+        ],
+        "network": "tcp",
+        "outboundTag": "direct",
+        "port": "61088",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "network": "tcp",
+        "outboundTag": "direct",
+        "port": "61088",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "protocol": "trojan",
+        "rule": "video",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "scope": "device",
+        "target": "direct"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "protocol": "trojan",
+        "rule": "specific",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "protocol": "trojan",
+        "rule": "specific",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "error": "указанные MAC и IP не принадлежат одному активному устройству"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "gamePresetId": "hunt",
+        "rule": "Игра · Hunt",
+        "scope": "device",
+        "target": "direct"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "scope": "device",
+        "target": "direct"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "rule": "control",
+        "scope": "global",
+        "target": "direct"
+      }
+    ],
+    "devices": [
+      {
+        "active": true,
+        "addresses": [
+          "192.168.10.20"
+        ],
+        "gameRouteEligible": true,
+        "mac": "02:00:00:00:00:aa",
+        "mode": "inherit"
+      },
+      {
+        "active": true,
+        "addresses": [
+          "192.168.10.21"
+        ],
+        "mac": "02:00:00:00:00:bb",
+        "mode": "override"
+      }
+    ],
+    "globalRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "udp",
+        "outboundTag": "secondary",
+        "port": "443",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "outboundTag": "secondary",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "198.51.100.50/32"
+        ],
+        "network": "tcp",
+        "outboundTag": "direct",
+        "port": "61088",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "network": "tcp",
+        "outboundTag": "direct",
+        "port": "61088",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ]
+  },
+  "game-without-explicit-device-mode": {
+    "assetRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      }
+    ],
+    "devices": [
+      {
+        "active": true,
+        "addresses": [
+          "192.168.10.20"
+        ],
+        "mac": "02:00:00:00:00:aa",
+        "mode": "inherit"
+      }
+    ],
+    "globalRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ]
+  },
+  "geodata-external-and-inline-equivalence": {
+    "assetRules": [
+      {
+        "domain": [
+          "regexp:^.+\\.example\\.org$"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "full:xn--e1aybc.xn--p1ai"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "keyword:news"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "regexp:^cdn[0-9]+\\.example\\.net$"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:_domainkey.youtube.com"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "full:local.limited.example"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "ext:sites.dat:RU-BLOCKED"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "ext:ips.dat:RU-BLOCKED"
+        ],
+        "outboundTag": "@block",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "protocol": "vless",
+        "rule": "children",
+        "scope": "global",
+        "target": "@vpn"
+      },
+      {
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "protocol": "vless",
+        "rule": "idn",
+        "scope": "global",
+        "target": "@vpn"
+      },
+      {
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "protocol": "vless",
+        "rule": "keyword",
+        "scope": "global",
+        "target": "@vpn"
+      },
+      {
+        "protocol": "vless",
+        "rule": "regex",
+        "scope": "global",
+        "target": "@vpn"
+      },
+      {
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "rule": "dkim",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "rule": "Exception",
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "rule": "Blocked site",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "Blocked site",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "rule": "Blocked site",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "Blocked site",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "rule": "Blocked site",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "Blocked IP",
+        "scope": "global",
+        "target": "@block"
+      },
+      {
+        "rule": "Blocked IP",
+        "scope": "global",
+        "target": "@block"
+      },
+      {
+        "error": "укажите домен или IP, протокол TCP или UDP и порт от 1 до 65535"
+      },
+      {
+        "rule": "Blocked IP",
+        "scope": "global",
+        "target": "@block"
+      },
+      {
+        "error": "неверный или не совпадающий с назначением targetIP"
+      },
+      {
+        "error": "укажите домен или IP, протокол TCP или UDP и порт от 1 до 65535"
+      },
+      {
+        "error": "укажите домен или IP, протокол TCP или UDP и порт от 1 до 65535"
+      }
+    ],
+    "devices": [],
+    "globalRules": [
+      {
+        "domain": [
+          "regexp:^.+\\.example\\.org$"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "full:xn--e1aybc.xn--p1ai"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "keyword:news"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "regexp:^cdn[0-9]+\\.example\\.net$"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:_domainkey.youtube.com"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "full:local.limited.example"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:limited.example",
+          "full:one.example",
+          "keyword:trending",
+          "regexp:^cdn[0-9]+\\.example$",
+          "regexp:^.+\\.wild\\.example$"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24",
+          "2001:db8::/32"
+        ],
+        "outboundTag": "@block",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "domain": [
+          "regexp:^.+\\.example\\.org$"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "full:xn--e1aybc.xn--p1ai"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "keyword:news"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "regexp:^cdn[0-9]+\\.example\\.net$"
+        ],
+        "outboundTag": "@vpn",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:_domainkey.youtube.com"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "full:local.limited.example"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:limited.example",
+          "full:one.example",
+          "keyword:trending",
+          "regexp:^cdn[0-9]+\\.example$",
+          "regexp:^.+\\.wild\\.example$"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24",
+          "2001:db8::/32"
+        ],
+        "outboundTag": "@block",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "type": "field"
+      }
+    ]
+  },
+  "global-only-without-lan": {
+    "assetRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "control",
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      }
+    ],
+    "devices": [
+      {
+        "active": false,
+        "addresses": [
+          "192.168.10.20"
+        ],
+        "mac": "02:00:00:00:00:aa",
+        "mode": "inherit",
+        "reason": "lan-disabled"
+      },
+      {
+        "active": false,
+        "addresses": [
+          "192.168.10.21"
+        ],
+        "mac": "02:00:00:00:00:bb",
+        "mode": "override",
+        "reason": "lan-disabled"
+      }
+    ],
+    "globalRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ]
+  },
+  "inherit-with-default": {
+    "error": "устройство 02:00:00:00:00:aa в режиме inherit наследует маршрут по умолчанию"
+  },
+  "invalid-domain-format": {
+    "error": "правило \"invalid\": некорректный домен"
+  },
+  "invalid-regex": {
+    "error": "правило \"invalid\": некорректное регулярное выражение RE2"
+  },
+  "ipv6-source": {
+    "error": "некорректный адрес LAN \"fd00::1\" устройства 02:00:00:00:00:aa"
+  },
+  "missing-device-default": {
+    "error": "устройство 02:00:00:00:00:aa в режиме override требует известный маршрут по умолчанию"
+  },
+  "missing-geodata-source": {
+    "error": "правило \"one\": выберите сохранённый источник GeoIP или GeoSite"
+  },
+  "missing-set": {
+    "error": "правило \"one\" ссылается на отсутствующий набор"
+  },
+  "multicast-mac": {
+    "error": "некорректный MAC устройства \"ff:ff:ff:ff:ff:ff\""
+  },
+  "multiple-conditions": {
+    "error": "правило \"one\" требует одно назначение и известный маршрут"
+  },
+  "named-sets-and-no-lan-inbound": {
+    "assetRules": [
+      {
+        "domain": [
+          "domain:video.example",
+          "domain:media.example"
+        ],
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "udp",
+        "outboundTag": "secondary",
+        "port": "443",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "outboundTag": "secondary",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "2001:db8::/32",
+          "198.51.100.7/32"
+        ],
+        "outboundTag": "secondary",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "protocol": "trojan",
+        "rule": "video",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:aa",
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "scope": "device",
+        "target": "direct"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "protocol": "trojan",
+        "rule": "specific",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "deviceMAC": "02:00:00:00:00:bb",
+        "protocol": "trojan",
+        "rule": "specific",
+        "scope": "device",
+        "target": "secondary"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "error": "указанные MAC и IP не принадлежат одному активному устройству"
+      },
+      {
+        "protocol": "trojan",
+        "rule": "IPs",
+        "scope": "global",
+        "target": "secondary"
+      },
+      {
+        "protocol": "trojan",
+        "rule": "IPs",
+        "scope": "global",
+        "target": "secondary"
+      }
+    ],
+    "devices": [
+      {
+        "active": true,
+        "addresses": [
+          "192.168.10.20"
+        ],
+        "mac": "02:00:00:00:00:aa",
+        "mode": "inherit"
+      },
+      {
+        "active": true,
+        "addresses": [
+          "192.168.10.21"
+        ],
+        "mac": "02:00:00:00:00:bb",
+        "mode": "override"
+      }
+    ],
+    "globalRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "2001:db8::/32",
+          "198.51.100.7/32"
+        ],
+        "outboundTag": "secondary",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "domain": [
+          "domain:video.example",
+          "domain:media.example"
+        ],
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "udp",
+        "outboundTag": "secondary",
+        "port": "443",
+        "sourceIP": [
+          "192.168.10.20/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "ip": [
+          "203.0.113.10/32"
+        ],
+        "outboundTag": "secondary",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "lan"
+        ],
+        "network": "tcp,udp",
+        "outboundTag": "direct",
+        "sourceIP": [
+          "192.168.10.21/32"
+        ],
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "2001:db8::/32",
+          "198.51.100.7/32"
+        ],
+        "outboundTag": "secondary",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ]
+  },
+  "network-address": {
+    "error": "некорректный адрес LAN \"192.168.10.0\" устройства 02:00:00:00:00:aa"
+  },
+  "noncanonical-ip": {
+    "error": "некорректный CIDR в правиле \"one\""
+  },
+  "observed-collision": {
+    "assetRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "checks": [
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "rule": "control",
+        "scope": "global",
+        "target": "direct"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "protocol": "hysteria2",
+        "scope": "global",
+        "target": "vpn"
+      },
+      {
+        "rule": "video",
+        "scope": "global",
+        "target": "zapret"
+      }
+    ],
+    "devices": [
+      {
+        "active": false,
+        "addresses": [
+          "192.168.10.20"
+        ],
+        "mac": "02:00:00:00:00:aa",
+        "mode": "inherit",
+        "reason": "unverified-address"
+      },
+      {
+        "active": false,
+        "addresses": [
+          "192.168.10.21"
+        ],
+        "mac": "02:00:00:00:00:bb",
+        "mode": "override",
+        "reason": "unverified-address"
+      }
+    ],
+    "globalRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ],
+    "lanRules": [
+      {
+        "domain": [
+          "domain:video.example"
+        ],
+        "outboundTag": "zapret",
+        "type": "field"
+      },
+      {
+        "ip": [
+          "203.0.113.0/24"
+        ],
+        "outboundTag": "direct",
+        "type": "field"
+      },
+      {
+        "network": "tcp,udp",
+        "outboundTag": "vpn",
+        "type": "field"
+      }
+    ]
+  },
+  "outside-lan": {
+    "error": "некорректный адрес LAN \"192.168.11.5\" устройства 02:00:00:00:00:aa"
+  },
+  "router-address": {
+    "error": "некорректный адрес LAN \"192.168.10.1\" устройства 02:00:00:00:00:aa"
+  },
+  "unknown-fallback": {
+    "error": "неизвестный маршрут сети по умолчанию \"missing\""
+  },
+  "zero-mac": {
+    "error": "некорректный MAC устройства \"00:00:00:00:00:00\""
+  }
+}

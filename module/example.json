@@ -1,0 +1,9 @@
+{
+  "panelPort": 18952,
+  "socksPort": 18953,
+  "defaultTarget": "direct",
+  "zapret": false,
+  "zapretServices": {"youtube": true, "discord": true},
+  "profiles": [],
+  "rules": []
+}

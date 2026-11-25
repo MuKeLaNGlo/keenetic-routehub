@@ -1,0 +1,1 @@
+{"rules":[{"name":"example.net","domain":"example.net","target":"@block"},{"name":"203.0.113.0/24","cidr":"203.0.113.0/24","target":"@block"}]}

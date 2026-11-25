@@ -1,0 +1,35 @@
+# Toolchains and compiled output
+node_modules/
+target/
+dist/
+dist-demo/
+build/
+coverage/
+*.ipk
+*.tsbuildinfo
+
+# Local tooling
+.DS_Store
+__pycache__/
+*.py[cod]
+*.log
+*.orig
+*.swp
+.env
+.env.*
+!.env.example
+
+# Router state and local credentials
+/config.json
+**/panel.key
+**/panel-password.json
+**/runtime.json
+**/dns.json
+**/subscription-catalog.json
+**/dns-hagezi-*.txt
+*.pem
+*.key
+*.p12
+*.pfx
+/backups/
+/work/

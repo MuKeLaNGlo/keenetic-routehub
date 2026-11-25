@@ -1,0 +1,11 @@
+[workspace]
+members = ["app", "crates/imports", "crates/policy", "crates/subscriptions"]
+exclude = ["crates/native-awg"]
+resolver = "3"
+
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "abort"
