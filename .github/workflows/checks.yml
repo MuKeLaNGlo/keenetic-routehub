@@ -3,6 +3,7 @@ name: Checks
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
@@ -50,9 +51,68 @@ jobs:
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           package_json_file: module/panel/package.json
+      - name: Verify the release tag
+        if: github.ref_type == 'tag'
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import tomllib
+
+          with open('module-rust/app/Cargo.toml', 'rb') as manifest:
+              version = tomllib.load(manifest)['package']['version']
+          expected = f'v{version}'
+          if os.environ['RELEASE_TAG'] != expected:
+              raise SystemExit(f'Expected release tag {expected} from the daemon manifest')
+          PY
       - name: Build the Rust daemon and Entware package
         run: |
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
           python3 module/packaging/build_ipk.py \
             --rebuild-panel \
-            --version '0.6.11~ci-1' \
             --output-dir "$PWD/dist"
+      - name: Prepare release files
+        if: github.ref_type == 'tag'
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          mkdir release
+          set -- dist/routehub_*_aarch64-3.10.ipk
+          test "$#" -eq 1 && test -f "$1"
+          cp "$1" "release/routehub-${RELEASE_TAG#v}-aarch64-3.10.ipk"
+          cd release
+          sha256sum ./*.ipk > SHA256SUMS
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: github.ref_type == 'tag'
+        with:
+          name: routehub-release
+          path: release/
+          if-no-files-found: error
+
+  release:
+    name: Prepare GitHub Release draft
+    if: github.ref_type == 'tag'
+    needs: [verify, arm64]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: routehub-release
+          path: release
+      - name: Attach checked package to draft
+        working-directory: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          sha256sum --check --strict SHA256SUMS
+          args=(--draft --verify-tag --generate-notes)
+          if [[ "$RELEASE_TAG" == *-* ]]; then
+            args+=(--prerelease)
+          fi
+          gh release create "$RELEASE_TAG" ./*.ipk SHA256SUMS \
+            --repo "$GITHUB_REPOSITORY" --title "RouteHub ${RELEASE_TAG#v}" "${args[@]}"

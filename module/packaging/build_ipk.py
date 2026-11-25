@@ -10,11 +10,19 @@ import re
 import subprocess
 import tarfile
 import tempfile
+import tomllib
 
 PACKAGING = Path(__file__).resolve().parent
 MODULE = PACKAGING.parent
 ROOT = MODULE.parent
 ARCH = "aarch64-3.10"
+
+
+def default_package_version():
+    with (ROOT / "module-rust/app/Cargo.toml").open("rb") as manifest:
+        version = tomllib.load(manifest)["package"]["version"]
+    # Entware orders the new public release series above previously shipped packages.
+    return f"1:{version.replace('-', '~', 1)}-1"
 
 
 def archive(files, epoch):
@@ -129,7 +137,8 @@ def build(version, output_dir, epoch, binary=None):
         "data.tar.gz": (archive(payload, epoch), 0o644),
     }, epoch)
     output_dir.mkdir(parents=True, exist_ok=True)
-    destination = output_dir / f"routehub_{version}_{ARCH}.ipk"
+    filename_version = version.split(":", 1)[-1]
+    destination = output_dir / f"routehub_{filename_version}_{ARCH}.ipk"
     with tempfile.NamedTemporaryFile(dir=output_dir, prefix=".routehub-", delete=False) as temp:
         partial = Path(temp.name)
     try:
@@ -143,12 +152,12 @@ def build(version, output_dir, epoch, binary=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--version", default="0.6.11~rust3-1")
+    parser.add_argument("--version", default=default_package_version())
     parser.add_argument("--output-dir", type=Path, default=ROOT / "dist")
     parser.add_argument("--binary", type=Path, help="package a prebuilt ARM64 RouteHub Rust executable")
     parser.add_argument("--rebuild-panel", action="store_true", help="build panel from the pnpm lockfile")
     options = parser.parse_args()
-    if not re.fullmatch(r"[0-9][0-9A-Za-z.+~-]*", options.version):
+    if not re.fullmatch(r"(?:[0-9]+:)?[0-9][0-9A-Za-z.+~-]*", options.version):
         parser.error("invalid package version")
     try:
         epoch = int(os.environ.get("SOURCE_DATE_EPOCH", "0"))

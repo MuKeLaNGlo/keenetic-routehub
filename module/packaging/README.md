@@ -1,6 +1,6 @@
 # Пакет RouteHub для Keenetic Entware
 
-Сборщик создаёт пакет Entware `aarch64-3.10` со статическим демоном Rust и встроенной веб-панелью. Для сборки нужны Python 3.9 или новее, Docker с поддержкой ARM64, Node.js 22 и pnpm.
+Сборщик создаёт пакет Entware `aarch64-3.10` со статическим демоном Rust и встроенной веб-панелью. Для сборки нужны Python 3.11 или новее, Docker с поддержкой ARM64, Node.js 22 и pnpm.
 
 ```sh
 python3 module/packaging/build_ipk.py --rebuild-panel
