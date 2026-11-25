@@ -23,7 +23,7 @@ pnpm install --frozen-lockfile
 pnpm build
 ```
 
-После сборки `dist/index.html` содержит HTML, стили, скрипты и шрифты. Соберите пакет из каталога модуля через `python3 packaging/build_ipk.py`. Команда с `--rebuild-panel` пересобирает HTML перед сборкой Go.
+После сборки `dist/index.html` содержит HTML, стили, скрипты и шрифты. Из корня репозитория соберите пакет командой `python3 module/packaging/build_ipk.py`. Флаг `--rebuild-panel` обновит HTML перед сборкой демона Rust.
 
 ## Макет с демонстрационными данными
 

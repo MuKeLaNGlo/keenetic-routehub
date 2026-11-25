@@ -4,23 +4,13 @@
 
 ## Пакет для Keenetic
 
-Сначала соберите панель, затем демон. Исполняемый файл содержит HTML, стили, JavaScript и шрифты панели.
+Сборщик встраивает HTML, стили, JavaScript и шрифты панели в демон Rust, затем упаковывает бинарник и интеграции Entware.
 
 ```sh
-pnpm --dir module/panel install --frozen-lockfile
-pnpm --dir module/panel build
-
-sh module-rust/tools/build-arm64.sh "$PWD/build/arm64"
-
-python3 module/packaging/build_ipk.py \
-  --binary "$PWD/build/arm64/routehub-rust" \
-  --version '0.6.11~rust3-1' \
-  --output-dir "$PWD/dist"
+python3 module/packaging/build_ipk.py --rebuild-panel
 ```
 
-Результат — `dist/routehub_0.6.11~rust3-1_aarch64-3.10.ipk`. Аргумент `--version` задаёт версию пакета. Для побайтового сравнения выпусков фиксируйте инструменты сборки и `SOURCE_DATE_EPOCH`.
-
-Сборщик IPK без `--binary` использует исходники Go. Это полезно для проверки совместимости на одном и том же плане. [Вариант Go](../module/packaging/README.md)
+Результат — `dist/routehub_0.6.11~rust3-1_aarch64-3.10.ipk`. Без `--rebuild-panel` сборщик использует существующий HTML или собирает панель, если его ещё нет. Для упаковки готового бинарника RouteHub для Linux ARM64 передайте `--binary`. Аргумент `--version` задаёт версию пакета. Для побайтового сравнения выпусков фиксируйте инструменты сборки и `SOURCE_DATE_EPOCH`.
 
 ## Демонстрационная панель
 
@@ -38,8 +28,8 @@ pnpm --dir module/panel dev --host 127.0.0.1
 ```sh
 pnpm --dir module/panel lint
 pnpm --dir module/panel build
-(cd module && go test -mod=readonly ./...)
 (cd module-rust && cargo test --locked --workspace --lib --bins --tests)
+(cd module-rust && cargo test --locked --manifest-path crates/native-awg/Cargo.toml --lib)
 ```
 
 Тесты Rust охватывают маршруты, импорт, авторизацию, хранилище и сетевые фикстуры. Для сквозной проверки демона и настоящего Xray в Linux ARM64 используйте `module-rust/tools/smoke-panel.py`. Скрипт принимает пути к исполняемым файлам RouteHub и Xray, собранным для Linux ARM64. Он проверяет HTTP, импорты, сохранение, откат и SOCKS5 в локальном окружении.

@@ -49,9 +49,9 @@ flowchart LR
 | --- | --- |
 | [`module-rust/`](module-rust/) | Основной демон и библиотеки маршрутизации, импорта и VPN. |
 | [`module/panel/`](module/panel/) | React-панель и режим демонстрации на тестовых данных. |
-| [`module/`](module/) | Реализация на Go для совместимости, интеграции Entware и сборщик IPK. |
+| [`module/`](module/) | Общие интеграции Entware, примеры конфигурации и сборщик IPK. |
 | [`docs/`](docs/) | Установка, сборка и локальные проверки. |
 
 ## Лицензия
 
-Для RouteHub лицензия пока не указана. Тестовая фикстура v2fly сохраняет [свою лицензию](module/ruleimport/testdata/dlc/LICENSE).
+Для RouteHub лицензия пока не указана. Тестовая фикстура v2fly сохраняет [свою лицензию](module-rust/crates/imports/tests/fixtures/dlc/LICENSE).

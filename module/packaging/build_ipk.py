@@ -13,6 +13,7 @@ import tempfile
 
 PACKAGING = Path(__file__).resolve().parent
 MODULE = PACKAGING.parent
+ROOT = MODULE.parent
 ARCH = "aarch64-3.10"
 
 
@@ -42,22 +43,14 @@ def archive(files, epoch):
     return result.getvalue()
 
 
-def build_binary(destination):
-    env = os.environ | {
-        "CGO_ENABLED": "0",
-        "GOOS": "linux",
-        "GOARCH": "arm64",
-        "GOARM64": "v8.0",
-        "GOFLAGS": "",
-        "GOWORK": "off",
-    }
+def build_binary():
+    destination = ROOT / "build" / "arm64"
     subprocess.run(
-        ["go", "build", "-trimpath", "-buildvcs=false", "-ldflags=-s -w -buildid=",
-         "-o", str(destination), "."],
-        cwd=MODULE,
-        env=env,
+        ["sh", str(ROOT / "module-rust/tools/build-arm64.sh"), str(destination)],
+        cwd=ROOT,
         check=True,
     )
+    return destination / "routehub-rust"
 
 
 def package_files(binary):
@@ -104,18 +97,13 @@ def package_files(binary):
 
 
 def build(version, output_dir, epoch, binary=None):
-    if binary is None:
-        with tempfile.TemporaryDirectory(prefix="routehub-build-") as workdir:
-            candidate = Path(workdir) / "routehub"
-            build_binary(candidate)
-            payload = package_files(candidate)
-    else:
-        with binary.open("rb") as executable:
-            header = executable.read(64)
-        # ELF64, little-endian, EM_AARCH64. Avoid packaging a host Mach-O.
-        if len(header) != 64 or header[:6] != b"\x7fELF\x02\x01" or header[18:20] != b"\xb7\x00":
-            raise ValueError("RouteHub executable must be Linux ARM64 ELF")
-        payload = package_files(binary)
+    binary = binary if binary is not None else build_binary()
+    with binary.open("rb") as executable:
+        header = executable.read(64)
+    # ELF64, little-endian, EM_AARCH64. Avoid packaging a host Mach-O.
+    if len(header) != 64 or header[:6] != b"\x7fELF\x02\x01" or header[18:20] != b"\xb7\x00":
+        raise ValueError("RouteHub executable must be Linux ARM64 ELF")
+    payload = package_files(binary)
 
     config_files = sorted(f"/{name}" for name, (_, mode) in payload.items() if mode == 0o600)
     control = (
@@ -155,9 +143,9 @@ def build(version, output_dir, epoch, binary=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--version", default="0.6.10-1")
-    parser.add_argument("--output-dir", type=Path, default=MODULE.parent / "dist")
-    parser.add_argument("--binary", type=Path, help="package a prebuilt ARM64 RouteHub executable")
+    parser.add_argument("--version", default="0.6.11~rust3-1")
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "dist")
+    parser.add_argument("--binary", type=Path, help="package a prebuilt ARM64 RouteHub Rust executable")
     parser.add_argument("--rebuild-panel", action="store_true", help="build panel from the pnpm lockfile")
     options = parser.parse_args()
     if not re.fullmatch(r"[0-9][0-9A-Za-z.+~-]*", options.version):
@@ -168,7 +156,8 @@ def main():
             raise ValueError
     except ValueError:
         parser.error("SOURCE_DATE_EPOCH must be an unsigned 32-bit integer")
-    if options.rebuild_panel:
+    panel_missing = not (MODULE / "panel/dist/index.html").is_file()
+    if options.rebuild_panel or (options.binary is None and panel_missing):
         subprocess.run(["pnpm", "install", "--frozen-lockfile"], cwd=MODULE / "panel", check=True)
         subprocess.run(["pnpm", "build"], cwd=MODULE / "panel", check=True)
     print(build(options.version, options.output_dir.resolve(), epoch, options.binary))

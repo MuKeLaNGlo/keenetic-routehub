@@ -1,8 +1,8 @@
-"""Compare both real daemons on Linux ARM64 with no external network access."""
+"""Measure the RouteHub daemon on Linux ARM64 with no external network access."""
 
+import argparse
 import ipaddress
 import json
-import os
 from pathlib import Path
 import stat
 import statistics
@@ -11,7 +11,6 @@ import tempfile
 import time
 import urllib.request
 
-LAB = Path("/lab")
 URL = "http://127.0.0.1:19387"
 SAMPLES = 750
 
@@ -65,15 +64,13 @@ def filesystem_usage(tmp):
     return allocated, logical
 
 
-def run(implementation):
-    default = f"routehub-{implementation}"
-    executable = LAB / (os.environ.get("ROUTEHUB_BENCH_RUST", default) if implementation == "rust" else default)
+def run(executable, xray):
     plan = {"panelPort": 19387, "socksPort": 19388, "profiles": [], "rules": rules()}
     with tempfile.TemporaryDirectory(prefix="routehub-compare-") as tmp:
         config = Path(tmp) / "config.json"
         config.write_text(json.dumps(plan))
         process = subprocess.Popen(
-            [str(executable), "serve", "-config", str(config), "-xray", str(LAB / "xray"),
+            [str(executable), "serve", "-config", str(config), "-xray", str(xray),
              "-helper-dir", tmp, "-dns-listen", ""],
             env={"PATH": "/usr/bin:/bin", "TMPDIR": tmp},
             stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
@@ -124,4 +121,9 @@ def run(implementation):
 
 
 if __name__ == "__main__":
-    print(json.dumps({"rules": 5274, "requestsPerDaemon": SAMPLES, "go": run("go"), "rust": run("rust")}, indent=2))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("routehub", type=lambda value: Path(value).resolve())
+    parser.add_argument("xray", type=lambda value: Path(value).resolve())
+    args = parser.parse_args()
+    result = run(args.routehub, args.xray)
+    print(json.dumps({"rules": 5274, "requests": SAMPLES, **result}, indent=2))

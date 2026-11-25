@@ -1,12 +1,12 @@
 # Пакет RouteHub для Keenetic Entware
 
-Сборка выполняется на компьютере с Go и Python 3.9 или новее. Скрипт берёт код из каталога `module`, собирает статический Linux ARM64 ELF и формирует IPK с архитектурой `aarch64-3.10`. Зафиксируйте версию Go и `SOURCE_DATE_EPOCH`, если проверяете побайтовую воспроизводимость между сборками.
+Сборщик создаёт пакет Entware `aarch64-3.10` со статическим демоном Rust и встроенной веб-панелью. Для сборки нужны Python 3.9 или новее, Docker с поддержкой ARM64, Node.js 22 и pnpm.
 
 ```sh
-python3 module/packaging/build_ipk.py
+python3 module/packaging/build_ipk.py --rebuild-panel
 ```
 
-Команда создаёт `dist/routehub_<версия>_aarch64-3.10.ipk`. Для другого выпуска укажите `--version`. Go встраивает готовый `module/panel/dist/index.html` в пакет. После правок в `module/panel/src` соберите пакет с `--rebuild-panel`. Для этой команды нужны Node.js и pnpm на компьютере сборки. `xray-core` из Entware устанавливает ядро в `/opt/sbin/xray`. При установке RouteHub сохраняет конфигурацию в `/opt/etc/routehub/config.json` и оставляет службу выключенной. [Исходники пакета Xray в Entware](https://github.com/Entware/entware-go/blob/master/xray/Makefile).
+Команда выполняется из корня репозитория. Подробности о версиях и упаковке готового бинарника есть в [инструкции сборки](../../docs/build.md). Пакет использует `xray-core` из Entware, сохраняет рабочую конфигурацию в `/opt/etc/routehub/config.json` и оставляет службу выключенной после чистой установки.
 
 После установки и настройки конфига службой можно управлять явно.
 

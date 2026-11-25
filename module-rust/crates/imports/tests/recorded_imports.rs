@@ -15,18 +15,16 @@ struct Case {
     sha256: String,
 }
 
-// Reference outputs were captured by running these inputs against the original
-// Go handlers. Store canonical JSON digests so large rule sets are not duplicated.
+// Reference outputs were captured from the previous released implementation. Store canonical JSON digests so large rule sets are not duplicated.
 #[test]
-fn previews_match_the_go_importers() {
-    let fixture_dir =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../module/ruleimport/testdata");
+fn previews_match_recorded_results() {
+    let fixture_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
     let valid_targets = ["@vpn", "direct", "zapret"]
         .into_iter()
         .map(str::to_owned)
         .collect::<HashSet<_>>();
 
-    for fixture in include_str!("go-parity.jsonl").lines() {
+    for fixture in include_str!("recorded-imports.jsonl").lines() {
         let case: Case = serde_json::from_str(fixture).unwrap();
         let data = match (case.stdin, case.file) {
             (Some(input), None) => STANDARD.decode(input).unwrap(),

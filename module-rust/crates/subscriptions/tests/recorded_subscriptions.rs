@@ -1,17 +1,36 @@
-use std::io::{self, Read};
-
 use chrono::DateTime;
 use routehub_subscriptions::{
     CatalogReferences, Subscription, SubscriptionPreview, merge_subscription_profiles,
     parse_subscription, public_subscriptions, subscription_snapshot, validate_subscriptions,
 };
+use serde::Deserialize;
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
 
-fn main() {
-    let mut input = String::new();
-    io::stdin().read_to_string(&mut input).unwrap();
-    let payload: Value = serde_json::from_str(&input).unwrap();
-    let response = match payload["op"].as_str() {
+#[derive(Deserialize)]
+struct Case {
+    name: String,
+    stdin: String,
+    sha256: String,
+}
+
+#[test]
+fn subscription_operations_match_recorded_results() {
+    for line in include_str!("recorded_subscriptions.jsonl").lines() {
+        let case: Case = serde_json::from_str(line).unwrap();
+        let input = serde_json::from_str(&case.stdin).unwrap();
+        let response = serde_json::to_string(&evaluate(&input)).unwrap();
+        assert_eq!(
+            format!("{:x}", Sha256::digest(response.as_bytes())),
+            case.sha256,
+            "{}: {response}",
+            case.name,
+        );
+    }
+}
+
+fn evaluate(payload: &Value) -> Value {
+    match payload["op"].as_str() {
         Some("sources") => {
             let sources: Vec<Subscription> =
                 serde_json::from_value(payload["sources"].clone()).unwrap();
@@ -58,6 +77,5 @@ fn main() {
             Ok(result) => serde_json::to_value(result).unwrap(),
             Err(error) => json!({"error":error.error,"incompatible":error.incompatible}),
         },
-    };
-    println!("{response}");
+    }
 }
