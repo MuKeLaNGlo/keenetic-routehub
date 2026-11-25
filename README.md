@@ -2,7 +2,7 @@
 
 **Раздельная маршрутизация для Keenetic через Entware.**
 
-[![Проверки](https://github.com/MuKeLaNGlo/keenetic-routerhub/actions/workflows/checks.yml/badge.svg)](https://github.com/MuKeLaNGlo/keenetic-routerhub/actions/workflows/checks.yml) · `Keenetic Hopper KN-3811` · `Entware ARM64`
+[![Проверки](https://github.com/MuKeLaNGlo/keenetic-routehub/actions/workflows/checks.yml/badge.svg)](https://github.com/MuKeLaNGlo/keenetic-routehub/actions/workflows/checks.yml) · `Keenetic Hopper KN-3811` · `Entware ARM64`
 
 RouteHub запускается на роутере и решает, куда направлять соединения домашней сети. Например, оставить Госуслуги на прямом подключении, направить отдельный сервис через AmneziaWG, а для Discord включить профиль Zapret. VPN-профили, правила, устройства и диагностика доступны в одной локальной веб-панели.
 
